@@ -29,18 +29,29 @@ public final class GolfCreativeTabs {
                         output.accept(GolfItems.PUTTER.get());
 
                         // Course construction surfaces.
+                        output.accept(GolfItems.GRASS_SLAB.get());
                         output.accept(GolfItems.TEE_GRASS.get());
+                        output.accept(GolfItems.TEE_GRASS_SLAB.get());
                         output.accept(GolfItems.FAIRWAY.get());
+                        output.accept(GolfItems.FAIRWAY_SLAB.get());
                         output.accept(GolfItems.FRINGE.get());
+                        output.accept(GolfItems.FRINGE_SLAB.get());
                         output.accept(GolfItems.PUTTING_GREEN.get());
-                        output.accept(GolfItems.ROUGH.get());
-                        output.accept(GolfItems.DEEP_ROUGH.get());
-                        output.accept(GolfItems.BUNKER_SAND.get());
+                        output.accept(GolfItems.PUTTING_GREEN_SLAB.get());
+                        output.accept(GolfItems.PUTTING_GREEN_LAYER.get());
                         output.accept(GolfItems.GREEN_SLOPE.get());
+                        output.accept(GolfItems.ROUGH.get());
+                        output.accept(GolfItems.ROUGH_SLAB.get());
+                        output.accept(GolfItems.DEEP_ROUGH.get());
+                        output.accept(GolfItems.DEEP_ROUGH_SLAB.get());
+                        output.accept(GolfItems.BUNKER_SAND.get());
+                        output.accept(GolfItems.BUNKER_SAND_SLAB.get());
+                        output.accept(GolfItems.BUNKER_SLOPE.get());
                         output.accept(GolfItems.FAIRWAY_SLOPE.get());
                         output.accept(GolfItems.ROUGH_SLOPE.get());
                         output.accept(GolfItems.GOLF_CUP.get());
                         output.accept(GolfItems.TEE_MARKER.get());
+                        output.accept(GolfItems.COURSE_DESIGNER.get());
 
                         // Development tools intentionally remain at the end while mechanics are alpha.
                         output.accept(GolfItems.DEBUG_WAND.get());

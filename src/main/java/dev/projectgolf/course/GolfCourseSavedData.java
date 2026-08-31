@@ -4,11 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -35,12 +38,19 @@ public final class GolfCourseSavedData extends SavedData {
                 BlockPos tee = holeTag.getBoolean("HasTee") ? BlockPos.of(holeTag.getLong("Tee")) : null;
                 BlockPos cup = holeTag.getBoolean("HasCup") ? BlockPos.of(holeTag.getLong("Cup")) : null;
 
+                List<BlockPos> guidePoints = new ArrayList<>();
+                ListTag guides = holeTag.getList("Guides", Tag.TAG_LONG);
+                for (int g = 0; g < guides.size(); g++) {
+                    guidePoints.add(BlockPos.of(((LongTag) guides.get(g)).getAsLong()));
+                }
+
                 course.putHole(new HoleDefinition(
                         holeTag.getInt("Number"),
                         holeTag.getInt("Par"),
                         holeTag.getString("Dimension"),
                         tee,
-                        cup));
+                        cup,
+                        guidePoints));
             }
 
             data.courses.put(key(course.name()), course);
@@ -70,6 +80,23 @@ public final class GolfCourseSavedData extends SavedData {
         return courses.values();
     }
 
+    public record TeeLink(String courseName, HoleDefinition hole) {}
+
+    /** Find all hole links using this physical tee. Multiple results are treated as builder error. */
+    public List<TeeLink> teesAt(String dimension, BlockPos pos) {
+        List<TeeLink> matches = new ArrayList<>();
+        for (CourseDefinition course : courses.values()) {
+            for (HoleDefinition hole : course.holes().values()) {
+                if (hole.tee() != null
+                        && pos.equals(hole.tee())
+                        && dimension.equals(hole.dimension())) {
+                    matches.add(new TeeLink(course.name(), hole));
+                }
+            }
+        }
+        return matches;
+    }
+
     public void changed() {
         setDirty();
     }
@@ -95,6 +122,13 @@ public final class GolfCourseSavedData extends SavedData {
                 if (hole.cup() != null) {
                     holeTag.putBoolean("HasCup", true);
                     holeTag.putLong("Cup", hole.cup().asLong());
+                }
+                if (!hole.guidePoints().isEmpty()) {
+                    ListTag guides = new ListTag();
+                    for (BlockPos point : hole.guidePoints()) {
+                        guides.add(LongTag.valueOf(point.asLong()));
+                    }
+                    holeTag.put("Guides", guides);
                 }
                 holes.add(holeTag);
             }

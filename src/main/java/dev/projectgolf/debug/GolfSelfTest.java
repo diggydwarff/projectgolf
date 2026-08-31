@@ -74,6 +74,13 @@ public final class GolfSelfTest {
         if (!(downhillRoll.x > flatRoll.x)) {
             failures.add("Downhill slope acceleration failed.");
         }
+        Vec3 weakUphill = new Vec3(0.012, 0.0, 0.0);
+        for (int i = 0; i < 40; i++) {
+            weakUphill = GolfPhysics.grounded(weakUphill, GolfSurface.GREEN, Direction.WEST, 0.25);
+        }
+        if (!(weakUphill.x < 0.0)) {
+            failures.add("Quarter putting slope did not reverse a weak uphill putt.");
+        }
         Vec3 airborne = GolfPhysics.airborne(new Vec3(1.0, 0.2, 0.0));
         if (!(airborne.x < 1.0) || airborne.y != 0.2) {
             failures.add("Air drag transform failed.");

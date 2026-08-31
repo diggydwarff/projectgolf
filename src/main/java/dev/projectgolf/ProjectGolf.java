@@ -2,6 +2,8 @@ package dev.projectgolf;
 
 import com.mojang.logging.LogUtils;
 import dev.projectgolf.command.GolfCommands;
+import dev.projectgolf.block.PuttingGreenSlopeInteraction;
+import dev.projectgolf.course.TeeMarkerInteraction;
 import dev.projectgolf.network.GolfNetworking;
 import dev.projectgolf.registry.GolfBlocks;
 import dev.projectgolf.registry.GolfEntities;
@@ -28,5 +30,7 @@ public final class ProjectGolf {
 
         NeoForge.EVENT_BUS.addListener(GolfCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(GolfRoundManager::onPlayerClone);
+        NeoForge.EVENT_BUS.addListener(TeeMarkerInteraction::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(PuttingGreenSlopeInteraction::onRightClickBlock);
     }
 }

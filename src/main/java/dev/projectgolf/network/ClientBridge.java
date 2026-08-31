@@ -12,7 +12,13 @@ public final class ClientBridge {
         void show(String title, String message);
     }
 
+    @FunctionalInterface
+    public interface HoleViewPresenter {
+        void show(HoleViewPayload payload);
+    }
+
     private static ShotSummaryPresenter shotSummaryPresenter = (title, message) -> {};
+    private static HoleViewPresenter holeViewPresenter = payload -> {};
 
     private ClientBridge() {}
 
@@ -22,5 +28,13 @@ public final class ClientBridge {
 
     public static void showShotSummary(String title, String message) {
         shotSummaryPresenter.show(title, message);
+    }
+
+    public static void installHoleViewPresenter(HoleViewPresenter presenter) {
+        holeViewPresenter = presenter == null ? payload -> {} : presenter;
+    }
+
+    public static void showHoleView(HoleViewPayload payload) {
+        holeViewPresenter.show(payload);
     }
 }

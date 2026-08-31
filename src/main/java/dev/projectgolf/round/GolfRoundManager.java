@@ -131,12 +131,12 @@ public final class GolfRoundManager {
         }
 
         var course = GolfCourseSavedData.get(player.getServer()).course(courseName).orElse(null);
-        HoleDefinition next = course == null ? null : course.hole(currentHole + 1);
-        if (next != null && next.complete()) {
-            golf.putInt(CURRENT_HOLE, currentHole + 1);
+        HoleDefinition next = course == null ? null : course.nextCompleteHoleAfter(currentHole).orElse(null);
+        if (next != null) {
+            golf.putInt(CURRENT_HOLE, next.number());
             resetHole(player);
             player.sendSystemMessage(Component.literal(
-                    "Next: hole " + (currentHole + 1) + " (par " + next.par() + ")."));
+                    "Next: hole " + next.number() + " (par " + next.par() + ")."));
             return;
         }
 
@@ -156,9 +156,39 @@ public final class GolfRoundManager {
     }
 
     public static void setRound(ServerPlayer player, String course, int hole) {
+        // Starting/jumping to a tee is a clean start. Do not leave an old competitive ball behind.
+        removeActiveBall(player);
         CompoundTag golf = golfTag(player);
         golf.putString(CURRENT_COURSE, course);
         golf.putInt(CURRENT_HOLE, hole);
+        golf.putInt(TOTAL_STROKES, 0);
+        golf.putInt(TOTAL_PAR, 0);
+        resetHole(player);
+    }
+
+
+    public static boolean hasActiveRound(ServerPlayer player) {
+        CompoundTag golf = golfTag(player);
+        return !golf.getString(CURRENT_COURSE).isBlank() && golf.getInt(CURRENT_HOLE) > 0;
+    }
+
+    public static String currentCourseName(ServerPlayer player) {
+        return golfTag(player).getString(CURRENT_COURSE);
+    }
+
+    public static int currentHoleNumber(ServerPlayer player) {
+        return golfTag(player).getInt(CURRENT_HOLE);
+    }
+
+    public static boolean isPlaying(ServerPlayer player, String course, int hole) {
+        return currentCourseName(player).equalsIgnoreCase(course) && currentHoleNumber(player) == hole;
+    }
+
+    public static void leaveRound(ServerPlayer player) {
+        removeActiveBall(player);
+        CompoundTag golf = golfTag(player);
+        golf.putString(CURRENT_COURSE, "");
+        golf.putInt(CURRENT_HOLE, 0);
         golf.putInt(TOTAL_STROKES, 0);
         golf.putInt(TOTAL_PAR, 0);
         resetHole(player);

@@ -11,13 +11,16 @@ import net.neoforged.neoforge.common.NeoForge;
 public final class ProjectGolfClient {
     public ProjectGolfClient(IEventBus modBus) {
         ClientBridge.installShotSummaryPresenter(ClientShotSummary::show);
+        ClientBridge.installHoleViewPresenter(ClientHoleView::show);
         modBus.addListener(ClientEvents::registerRenderers);
         modBus.addListener(ClientEvents::registerHud);
+        modBus.addListener(ClientEvents::registerKeyMappings);
         modBus.addListener(ClientEvents::registerBlockColors);
         modBus.addListener(ClientEvents::registerItemColors);
 
         NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onUseInput);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onMouseScroll);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onComputeFov);
     }
 }

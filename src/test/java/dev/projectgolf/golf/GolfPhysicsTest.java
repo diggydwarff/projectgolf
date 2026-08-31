@@ -79,4 +79,30 @@ final class GolfPhysicsTest {
         Vec3 to = new Vec3(3.0, 100.0, 4.0);
         assertEquals(5.0, GolfPhysics.horizontalDistance(from, to), EPS);
     }
+
+    @Test
+    void quarterGreenUphillCostsRollingMomentum() {
+        Vec3 flat = new Vec3(0.4, 0.0, 0.0);
+        Vec3 uphill = GolfPhysics.greenLayerUphill(flat, GolfTuning.PUTTING_GREEN_LAYER_HEIGHT);
+        assertTrue(uphill.horizontalDistanceSqr() < flat.horizontalDistanceSqr());
+    }
+    @Test
+    void puttingSlopeForceScalesWithRise() {
+        assertEquals(GolfTuning.SLOPE_ACCELERATION * 0.25,
+                GolfPhysics.slopeAccelerationMagnitude(0.25), EPS);
+        assertEquals(GolfTuning.SLOPE_ACCELERATION * 0.50,
+                GolfPhysics.slopeAccelerationMagnitude(0.50), EPS);
+        assertEquals(GolfTuning.SLOPE_ACCELERATION,
+                GolfPhysics.slopeAccelerationMagnitude(1.0), EPS);
+    }
+
+    @Test
+    void weakUphillPuttEventuallyRollsBackDownQuarterSlope() {
+        Vec3 velocity = new Vec3(0.012, 0.0, 0.0); // east/uphill
+        for (int i = 0; i < 40; i++) {
+            velocity = GolfPhysics.grounded(velocity, GolfSurface.GREEN, Direction.WEST, 0.25);
+        }
+        assertTrue(velocity.x < 0.0, "quarter slope should reverse an under-powered uphill putt");
+    }
+
 }

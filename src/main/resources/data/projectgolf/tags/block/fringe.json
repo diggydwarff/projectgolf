@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "projectgolf:fringe"
+    "projectgolf:fringe",
+    "projectgolf:fringe_slab"
   ]
 }

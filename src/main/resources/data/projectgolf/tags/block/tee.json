@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "projectgolf:tee_grass"
+    "projectgolf:tee_grass",
+    "projectgolf:tee_grass_slab"
   ]
 }

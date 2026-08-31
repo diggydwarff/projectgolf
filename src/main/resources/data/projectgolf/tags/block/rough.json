@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "projectgolf:rough",
-    "projectgolf:rough_slope"
+    "projectgolf:rough_slope",
+    "projectgolf:rough_slab"
   ]
 }

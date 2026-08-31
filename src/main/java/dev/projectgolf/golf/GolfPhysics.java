@@ -48,19 +48,35 @@ public final class GolfPhysics {
     }
 
     public static Vec3 grounded(Vec3 velocity, GolfSurface surface, @Nullable Direction downhill) {
+        return grounded(velocity, surface, downhill, downhill == null ? 0.0 : 1.0);
+    }
+
+    /**
+     * Applies surface roll plus gravity-like downhill acceleration scaled by the ramp's actual rise.
+     * A quarter-height slope therefore exerts one quarter of the old full-height slope force, while
+     * the legacy full slopes retain their established tuning. Because the force always points
+     * downhill, an under-powered uphill putt naturally slows, stops, and rolls back.
+     */
+    public static Vec3 grounded(Vec3 velocity, GolfSurface surface, @Nullable Direction downhill, double rise) {
         Vec3 result = new Vec3(
                 velocity.x * surface.rollingRetention(),
                 0.0,
                 velocity.z * surface.rollingRetention()
         );
-        if (downhill != null) {
+        if (downhill != null && rise > 0.0) {
+            double acceleration = slopeAccelerationMagnitude(rise);
             result = result.add(
-                    downhill.getStepX() * GolfTuning.SLOPE_ACCELERATION,
+                    downhill.getStepX() * acceleration,
                     0.0,
-                    downhill.getStepZ() * GolfTuning.SLOPE_ACCELERATION
+                    downhill.getStepZ() * acceleration
             );
         }
         return clampSpeed(result);
+    }
+
+    public static double slopeAccelerationMagnitude(double rise) {
+        if (!Double.isFinite(rise) || rise <= 0.0) return 0.0;
+        return GolfTuning.SLOPE_ACCELERATION * Math.min(1.0, rise);
     }
 
     public static Vec3 airborne(Vec3 velocity) {
@@ -79,6 +95,16 @@ public final class GolfPhysics {
         double dx = to.x - from.x;
         double dz = to.z - from.z;
         return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    /**
+     * A quarter-layer climb should cost momentum; vanilla entity step-up would otherwise let a
+     * rolling ball climb terraces almost for free. Only Project Golf green layers call this.
+     */
+    public static Vec3 greenLayerUphill(Vec3 velocity, double rise) {
+        if (!finite(velocity) || rise <= 0.0) return velocity;
+        double factor = Math.max(0.55, 1.0 - rise * 0.80);
+        return new Vec3(velocity.x * factor, velocity.y, velocity.z * factor);
     }
 
     public static boolean shouldSettle(Vec3 velocity, boolean onGround) {

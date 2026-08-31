@@ -5,11 +5,21 @@
     "projectgolf:fairway",
     "projectgolf:fringe",
     "projectgolf:putting_green",
+    "projectgolf:putting_green_layer",
     "projectgolf:rough",
     "projectgolf:deep_rough",
     "projectgolf:bunker_sand",
     "projectgolf:green_slope",
     "projectgolf:fairway_slope",
-    "projectgolf:rough_slope"
+    "projectgolf:rough_slope",
+    "projectgolf:grass_slab",
+    "projectgolf:tee_grass_slab",
+    "projectgolf:fairway_slab",
+    "projectgolf:fringe_slab",
+    "projectgolf:putting_green_slab",
+    "projectgolf:rough_slab",
+    "projectgolf:deep_rough_slab",
+    "projectgolf:bunker_sand_slab",
+    "projectgolf:bunker_slope"
   ]
 }

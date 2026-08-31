@@ -2,7 +2,9 @@
   "replace": false,
   "values": [
     "projectgolf:putting_green",
+    "projectgolf:putting_green_layer",
     "projectgolf:green_slope",
-    "projectgolf:golf_cup"
+    "projectgolf:golf_cup",
+    "projectgolf:putting_green_slab"
   ]
 }

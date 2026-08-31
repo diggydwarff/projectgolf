@@ -1,6 +1,8 @@
 package dev.projectgolf.entity;
 
 import dev.projectgolf.block.GolfSlopeBlock;
+import dev.projectgolf.block.PuttingGreenLayerBlock;
+import dev.projectgolf.block.PuttingGreenSlopeBlock;
 import dev.projectgolf.golf.ClubType;
 import dev.projectgolf.golf.GolfPhysics;
 import dev.projectgolf.golf.GolfSurface;
@@ -56,6 +58,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
     private int inHoleTicks;
     private int ownershipCheckTicks;
     private int landingMarkerTicks;
+    private int landingMarkerTotalTicks;
     private boolean sleeping;
 
     // Shot telemetry is deliberately runtime-only. A restart does not invent partial telemetry.
@@ -98,8 +101,8 @@ public class GolfBallEntity extends ThrowableItemProjectile {
 
     @Override
     public float maxUpStep() {
-        // Course ramps use 1/8-block collision slices. Allow those to be traversed while
-        // remaining too low to auto-climb normal half-slabs or full terrain steps.
+        // Quarter-height putting-green layers are the normal gentle elevation tool. Allow one
+        // 1/4 transition while remaining too low to auto-climb normal half-slabs/full steps.
         return GolfTuning.BALL_MAX_UP_STEP;
     }
 
@@ -218,9 +221,13 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         if (!level().isClientSide && landingMarkerTicks > 0) {
             if (landingMarkerTicks % GolfTuning.LANDING_MARKER_INTERVAL_TICKS == 0) {
                 ServerPlayer markerOwner = ownerPlayer();
-                if (markerOwner != null) GolfVisualEffects.landingMarker(markerOwner, position());
+                float strength = landingMarkerTotalTicks <= 0
+                        ? 0.0f
+                        : landingMarkerTicks / (float) landingMarkerTotalTicks;
+                if (markerOwner != null) GolfVisualEffects.landingMarker(markerOwner, position(), strength);
             }
             landingMarkerTicks--;
+            if (landingMarkerTicks <= 0) landingMarkerTotalTicks = 0;
         }
 
         // Flat resting balls are the common case. Avoid running gravity, Entity.move collision
@@ -236,6 +243,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         Vec3 requested = GolfPhysics.requestedVelocity(getDeltaMovement(), isNoGravity());
 
         Vec3 beforeMove = position();
+        SlopeEntry slopeEntry = findUphillSlopeEntry(beforeMove, requested);
         move(MoverType.SELF, requested);
         Vec3 actualMove = position().subtract(beforeMove);
 
@@ -243,23 +251,54 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         boolean collidedY = Math.abs(actualMove.y - requested.y) > 1.0e-5;
         boolean collidedZ = Math.abs(actualMove.z - requested.z) > 1.0e-5;
 
+        // Entity.move can treat the first tiny voxel terrace of a slope as a horizontal wall for
+        // small projectile-sized entities. That previously fed into the golf wall-bounce code and
+        // literally reversed a putt at the bottom edge. If the obstacle is the legal downhill edge
+        // of a configured golf slope, lift onto its first collision terrace and retry only the
+        // horizontal remainder. This is a slope transition, not a wall impact.
+        boolean handledSlopeLip = false;
+        if (slopeEntry != null && (collidedX || collidedZ)) {
+            Vec3 firstMove = actualMove;
+            double lift = slopeEntry.firstSurfaceY() - getY();
+            if (lift <= 0.02 && getY() >= slopeEntry.firstSurfaceY() - 0.02) {
+                // Vanilla step-up already got us onto the first terrace; the tiny horizontal
+                // discrepancy is not a wall and must not reverse the ball.
+                handledSlopeLip = true;
+            } else if (lift > 1.0e-5 && lift <= maxUpStep() + 0.03) {
+                setPos(getX(), getY() + lift + 0.001, getZ());
+                double remainingX = requested.x - firstMove.x;
+                double remainingZ = requested.z - firstMove.z;
+                move(MoverType.SELF, new Vec3(remainingX, 0.0, remainingZ));
+                actualMove = position().subtract(beforeMove);
+                collidedX = Math.abs(actualMove.x - requested.x) > 1.0e-5;
+                collidedZ = Math.abs(actualMove.z - requested.z) > 1.0e-5;
+                handledSlopeLip = true;
+            }
+        }
+
         GolfSurface surface = currentLie();
         Vec3 velocity = requested;
+        boolean greenLayerStep = isPuttingGreenLayerAt(beforeMove) || isPuttingGreenLayerAt(position());
 
         // Horizontal walls lose most energy. Ground impacts use the lie's restitution.
-        if (collidedX) velocity = GolfPhysics.wallBounceX(velocity);
-        if (collidedZ) velocity = GolfPhysics.wallBounceZ(velocity);
+        if (collidedX && !handledSlopeLip) velocity = GolfPhysics.wallBounceX(velocity);
+        if (collidedZ && !handledSlopeLip) velocity = GolfPhysics.wallBounceZ(velocity);
         if (collidedY) velocity = GolfPhysics.verticalCollision(velocity, surface);
 
-        Direction downhill = null;
+        SlopeInfo slopeInfo = null;
         if (onGround() && Math.abs(velocity.y) < 0.08) {
-            downhill = downhillDirection();
-            velocity = GolfPhysics.grounded(velocity, surface, downhill);
+            slopeInfo = currentSlopeInfo();
+            Direction downhill = slopeInfo == null ? null : slopeInfo.downhill();
+            double slopeRise = slopeInfo == null ? 0.0 : slopeInfo.rise();
+            velocity = GolfPhysics.grounded(velocity, surface, downhill, slopeRise);
+            if (greenLayerStep && actualMove.y > 0.01) {
+                velocity = GolfPhysics.greenLayerUphill(velocity, actualMove.y);
+            }
         } else {
             velocity = GolfPhysics.airborne(velocity);
         }
 
-        if (GolfPhysics.shouldSettle(velocity, onGround())) {
+        if (slopeInfo == null && GolfPhysics.shouldSettle(velocity, onGround())) {
             settlingTicks++;
             if (settlingTicks >= GolfTuning.STOP_SETTLE_TICKS) {
                 velocity = Vec3.ZERO;
@@ -268,8 +307,9 @@ public class GolfBallEntity extends ThrowableItemProjectile {
                 if (!level().isClientSide && !isInWater() && !isOutOfBoundsSurface()) {
                     lastSafePosition = position();
                 }
-                // Never sleep on a known slope: repeated downhill acceleration is gameplay.
-                sleeping = downhill == null;
+                // Never sleep on a known slope: repeated downhill acceleration is gameplay and
+                // is what lets a weak uphill putt reverse and roll back down.
+                sleeping = slopeInfo == null;
             }
         } else {
             settlingTicks = 0;
@@ -324,6 +364,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         shotTicks = 0;
         shotStopReported = false;
         landingMarkerTicks = 0;
+        landingMarkerTotalTicks = 0;
         previousShotPosition = position();
     }
 
@@ -335,6 +376,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         shotTicks = 0;
         shotStopReported = true;
         landingMarkerTicks = 0;
+        landingMarkerTotalTicks = 0;
         previousShotPosition = position();
     }
 
@@ -363,25 +405,79 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         double roll = Math.max(0.0, shotDistance - shotCarryDistance);
         ServerPlayer owner = ownerPlayer();
         if (owner != null) {
-            GolfVisualEffects.landingMarker(owner, position());
+            int markerDuration = GolfTuning.landingMarkerDurationTicks(shotDistance);
+            landingMarkerTotalTicks = markerDuration;
+            GolfVisualEffects.landingMarker(owner, position(), 1.0f);
             // The immediate marker counts as the first pulse; avoid re-emitting again one tick later.
-            landingMarkerTicks = Math.max(0, GolfTuning.LANDING_MARKER_TICKS - 1);
+            landingMarkerTicks = Math.max(0, markerDuration - 1);
             PacketDistributor.sendToPlayer(owner, ShotSummaryPayload.forStoppedShot(
                     shotClub, shotPower, shotAccuracy, shotDistance, shotCarryDistance, roll,
                     currentLie(), GolfRoundManager.strokes(owner), false));
         }
     }
 
-    private @Nullable Direction downhillDirection() {
-        BlockState state = level().getBlockState(blockPosition());
-        if (!(state.getBlock() instanceof GolfSlopeBlock)) {
-            state = level().getBlockState(blockPosition().below());
-        }
-        if (state.getBlock() instanceof GolfSlopeBlock slope) {
-            return slope.downhill(state);
+    private boolean isPuttingGreenLayerAt(Vec3 position) {
+        BlockPos pos = BlockPos.containing(position);
+        return level().getBlockState(pos).getBlock() instanceof PuttingGreenLayerBlock
+                || level().getBlockState(pos.below()).getBlock() instanceof PuttingGreenLayerBlock;
+    }
+
+    private @Nullable SlopeEntry findUphillSlopeEntry(Vec3 from, Vec3 requested) {
+        Direction movement = horizontalDirection(requested);
+        if (movement == null) return null;
+
+        BlockPos origin = BlockPos.containing(from);
+        BlockPos projected = BlockPos.containing(from.x + requested.x, from.y, from.z + requested.z);
+        BlockPos[] candidates = {
+                projected, projected.below(),
+                origin.relative(movement), origin.relative(movement).below(),
+                origin, origin.below()
+        };
+
+        for (BlockPos pos : candidates) {
+            BlockState state = level().getBlockState(pos);
+            if (!(state.getBlock() instanceof PuttingGreenSlopeBlock slope)) continue;
+            if (state.getValue(PuttingGreenSlopeBlock.FACING) != movement) continue;
+
+            double lowSurfaceY = pos.getY() + slope.lowHeight(state);
+            // Only assist a slope whose low edge actually meets the ball's current terrace. Do not
+            // turn this into generic auto-climb for mismatched elevations or ordinary blocks.
+            if (Math.abs(lowSurfaceY - from.y) > maxUpStep() + 0.035) continue;
+
+            double firstSurfaceY = pos.getY() + slope.firstCollisionHeight(state);
+            double requiredLift = firstSurfaceY - from.y;
+            if (requiredLift < -0.02 || requiredLift > maxUpStep() + 0.035) continue;
+            return new SlopeEntry(firstSurfaceY);
         }
         return null;
     }
+
+    private static @Nullable Direction horizontalDirection(Vec3 velocity) {
+        double ax = Math.abs(velocity.x);
+        double az = Math.abs(velocity.z);
+        if (Math.max(ax, az) < 1.0e-6) return null;
+        if (ax > az) return velocity.x >= 0.0 ? Direction.EAST : Direction.WEST;
+        return velocity.z >= 0.0 ? Direction.SOUTH : Direction.NORTH;
+    }
+
+    private record SlopeEntry(double firstSurfaceY) {}
+
+    private @Nullable SlopeInfo currentSlopeInfo() {
+        BlockState state = level().getBlockState(blockPosition());
+        if (!(state.getBlock() instanceof GolfSlopeBlock)
+                && !(state.getBlock() instanceof PuttingGreenSlopeBlock)) {
+            state = level().getBlockState(blockPosition().below());
+        }
+        if (state.getBlock() instanceof PuttingGreenSlopeBlock slope) {
+            return new SlopeInfo(slope.downhill(state), slope.rise(state));
+        }
+        if (state.getBlock() instanceof GolfSlopeBlock slope) {
+            return new SlopeInfo(slope.downhill(state), 1.0);
+        }
+        return null;
+    }
+
+    private record SlopeInfo(Direction downhill, double rise) {}
 
     private boolean isOutOfBoundsSurface() {
         BlockState current = level().getBlockState(blockPosition());
@@ -444,22 +540,29 @@ public class GolfBallEntity extends ThrowableItemProjectile {
             if (dx * dx + dz * dz <= GolfTuning.CUP_CAPTURE_RADIUS * GolfTuning.CUP_CAPTURE_RADIUS) {
                 shotActive = false;
                 landingMarkerTicks = 0;
+                landingMarkerTotalTicks = 0;
                 setInHole(true);
                 inHoleTicks = 0;
                 setPos(cupX, pos.getY() + 1.01, cupZ);
                 setDeltaMovement(Vec3.ZERO);
 
-                if (level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                    GolfVisualEffects.holed(serverLevel, position());
-                }
-
                 if (ownerForCup != null) {
+                    int strokes = GolfRoundManager.strokes(ownerForCup);
+                    int par = GolfRoundManager.currentHoleDefinition(ownerForCup)
+                            .map(dev.projectgolf.course.HoleDefinition::par)
+                            .orElse(0);
+                    if (level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                        GolfVisualEffects.holed(serverLevel, position(), strokes, par);
+                    }
+
                     if (shotCarryDistance < 0.0) shotCarryDistance = 0.0;
                     double roll = Math.max(0.0, shotDistance - shotCarryDistance);
                     PacketDistributor.sendToPlayer(ownerForCup, ShotSummaryPayload.forStoppedShot(
                             shotClub, shotPower, shotAccuracy, shotDistance, shotCarryDistance, roll,
-                            currentLie(), GolfRoundManager.strokes(ownerForCup), true));
+                            currentLie(), strokes, true));
                     GolfRoundManager.finishHole(ownerForCup);
+                } else if (level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                    GolfVisualEffects.holed(serverLevel, position());
                 }
                 return true;
             }

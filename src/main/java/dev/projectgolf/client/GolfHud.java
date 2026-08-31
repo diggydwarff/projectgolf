@@ -12,6 +12,8 @@ public final class GolfHud {
 
     public static void render(GuiGraphics graphics) {
         Minecraft mc = Minecraft.getInstance();
+        ClientHoleView.renderHud(graphics);
+        if (ClientHoleView.active()) return;
         if (mc.player == null || !(mc.player.getMainHandItem().getItem() instanceof GolfClubItem clubItem)) return;
 
         ClientSwingController.trackedBall().ifPresent(ball -> {

@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "projectgolf:deep_rough"
+    "projectgolf:deep_rough",
+    "projectgolf:deep_rough_slab"
   ]
 }

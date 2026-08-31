@@ -19,5 +19,19 @@
   "block.projectgolf.rough_slope": "Rough Slope",
   "block.projectgolf.golf_cup": "Golf Cup",
   "block.projectgolf.tee_marker": "Tee Marker",
-  "block.projectgolf.debug_oob": "Debug Out-of-Bounds Surface"
+  "block.projectgolf.debug_oob": "Optional OOB Marker (Debug)",
+  "item.projectgolf.course_designer": "Course Designer",
+  "block.projectgolf.putting_green_layer": "Putting Green Layer",
+  "block.projectgolf.bunker_slope": "Bunker Slope",
+  "block.projectgolf.grass_slab": "Grass Slab",
+  "block.projectgolf.tee_grass_slab": "Tee Grass Slab",
+  "block.projectgolf.fairway_slab": "Fairway Slab",
+  "block.projectgolf.fringe_slab": "Fringe Slab",
+  "block.projectgolf.putting_green_slab": "Putting Green Slab",
+  "block.projectgolf.rough_slab": "Rough Slab",
+  "block.projectgolf.deep_rough_slab": "Deep Rough Slab",
+  "block.projectgolf.bunker_sand_slab": "Bunker Sand Slab",
+  "key.categories.projectgolf": "Project Golf",
+  "key.projectgolf.hole_view": "View Current Hole",
+  "key.projectgolf.flyover": "Hole Flyover"
 }

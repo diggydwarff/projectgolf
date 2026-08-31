@@ -1,3 +1,6 @@
 {
-  "parent": "minecraft:item/snowball"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "projectgolf:item/golf_ball"
+  }
 }

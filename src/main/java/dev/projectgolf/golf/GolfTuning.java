@@ -22,7 +22,9 @@ public final class GolfTuning {
     public static final int HOLED_BALL_DESPAWN_TICKS = 20 * 5;
 
     public static final double SLOPE_ACCELERATION = 0.0034;
-    // Eight-slice ramps rise 0.125 blocks per slice; this clears a slice without climbing half-slabs.
+    // Quarter-layer putting greens rise 0.25 blocks at a time. This clears one golf layer while
+    // remaining below a normal half-slab/full terrain step.
+    public static final float PUTTING_GREEN_LAYER_HEIGHT = 0.25f;
     public static final float BALL_MAX_UP_STEP = 0.26f;
 
     public static final int POWER_SWEEP_TICKS = 30;
@@ -44,8 +46,14 @@ public final class GolfTuning {
     public static final int LOW_SPEED_BALL_TRAIL_INTERVAL_TICKS = 12;
     public static final int BALL_TRAIL_ACCENT_INTERVAL_TICKS = 24;
     public static final double LOW_SPEED_TRAIL_THRESHOLD = 1.0;
-    public static final int LANDING_MARKER_TICKS = 20 * 5;
+    public static final int LANDING_MARKER_SHORT_TICKS = 20 * 5;
+    public static final int LANDING_MARKER_MEDIUM_TICKS = 20 * 8;
+    public static final int LANDING_MARKER_LONG_TICKS = 20 * 12;
+    // Compatibility alias retained for development validators/tools from earlier alphas.
+    public static final int LANDING_MARKER_TICKS = LANDING_MARKER_LONG_TICKS;
     public static final int LANDING_MARKER_INTERVAL_TICKS = 20;
+    public static final double LANDING_MARKER_MEDIUM_DISTANCE = 30.0;
+    public static final double LANDING_MARKER_LONG_DISTANCE = 80.0;
     public static final double BALL_LOCATOR_MIN_DISTANCE = 14.0;
 
     // Shift + mouse wheel adjusts how much of the selected club's full power is available
@@ -53,4 +61,10 @@ public final class GolfTuning {
     public static final float TARGET_POWER_MIN = 0.10f;
     public static final float TARGET_POWER_STEP = 0.05f;
     public static final float TARGET_POWER_FINE_STEP = 0.01f;
+
+    public static int landingMarkerDurationTicks(double shotDistance) {
+        if (shotDistance >= LANDING_MARKER_LONG_DISTANCE) return LANDING_MARKER_LONG_TICKS;
+        if (shotDistance >= LANDING_MARKER_MEDIUM_DISTANCE) return LANDING_MARKER_MEDIUM_TICKS;
+        return LANDING_MARKER_SHORT_TICKS;
+    }
 }
