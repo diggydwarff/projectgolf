@@ -1,0 +1,6 @@
+{
+  "parent": "projectgolf:block/tinted_slab_bottom",
+  "textures": {
+    "all": "minecraft:block/grass_block_top"
+  }
+}

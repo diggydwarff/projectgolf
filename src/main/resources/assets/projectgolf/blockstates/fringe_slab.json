@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "projectgolf:block/fringe_slab"
+    },
+    "type=top": {
+      "model": "projectgolf:block/fringe_slab_top"
+    },
+    "type=double": {
+      "model": "projectgolf:block/fringe_slab_double"
+    }
+  }
+}

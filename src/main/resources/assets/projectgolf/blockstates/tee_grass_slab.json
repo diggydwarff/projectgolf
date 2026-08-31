@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "projectgolf:block/tee_grass_slab"
+    },
+    "type=top": {
+      "model": "projectgolf:block/tee_grass_slab_top"
+    },
+    "type=double": {
+      "model": "projectgolf:block/tee_grass_slab_double"
+    }
+  }
+}

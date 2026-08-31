@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "layers=1": { "model": "projectgolf:block/putting_green_layer_1" },
+    "layers=2": { "model": "projectgolf:block/putting_green_layer_2" },
+    "layers=3": { "model": "projectgolf:block/putting_green_layer_3" },
+    "layers=4": { "model": "projectgolf:block/putting_green_layer_4" }
+  }
+}

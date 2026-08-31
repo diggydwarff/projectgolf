@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "projectgolf:block/fairway_slab"
+    },
+    "type=top": {
+      "model": "projectgolf:block/fairway_slab_top"
+    },
+    "type=double": {
+      "model": "projectgolf:block/fairway_slab_double"
+    }
+  }
+}

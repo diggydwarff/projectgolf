@@ -1,0 +1,6 @@
+{
+  "parent": "projectgolf:block/tinted_slab_top",
+  "textures": {
+    "all": "minecraft:block/moss_block"
+  }
+}

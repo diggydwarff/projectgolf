@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "name": "projectgolf:putting_green_layer",
+              "conditions": [{"condition": "minecraft:block_state_property", "block": "projectgolf:putting_green_layer", "properties": {"layers": "1"}}],
+              "functions": [{"function": "minecraft:set_count", "count": 1.0}]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "projectgolf:putting_green_layer",
+              "conditions": [{"condition": "minecraft:block_state_property", "block": "projectgolf:putting_green_layer", "properties": {"layers": "2"}}],
+              "functions": [{"function": "minecraft:set_count", "count": 2.0}]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "projectgolf:putting_green_layer",
+              "conditions": [{"condition": "minecraft:block_state_property", "block": "projectgolf:putting_green_layer", "properties": {"layers": "3"}}],
+              "functions": [{"function": "minecraft:set_count", "count": 3.0}]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "projectgolf:putting_green_layer",
+              "conditions": [{"condition": "minecraft:block_state_property", "block": "projectgolf:putting_green_layer", "properties": {"layers": "4"}}],
+              "functions": [{"function": "minecraft:set_count", "count": 4.0}]
+            }
+          ]
+        }
+      ],
+      "conditions": [{"condition": "minecraft:survives_explosion"}]
+    }
+  ]
+}

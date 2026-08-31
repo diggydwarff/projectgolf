@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "projectgolf:block/putting_green_slab"
+    },
+    "type=top": {
+      "model": "projectgolf:block/putting_green_slab_top"
+    },
+    "type=double": {
+      "model": "projectgolf:block/putting_green_slab_double"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "projectgolf:block/deep_rough_slab"
+    },
+    "type=top": {
+      "model": "projectgolf:block/deep_rough_slab_top"
+    },
+    "type=double": {
+      "model": "projectgolf:block/deep_rough_slab_double"
+    }
+  }
+}
