@@ -9,6 +9,8 @@ import dev.projectgolf.course.CourseDefinition;
 import dev.projectgolf.course.GolfCourseSavedData;
 import dev.projectgolf.course.HoleDefinition;
 import dev.projectgolf.round.GolfRoundManager;
+import dev.projectgolf.round.GolfRecordsSavedData;
+import dev.projectgolf.round.ScorecardData;
 import dev.projectgolf.network.HoleViewPayload;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -17,6 +19,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class GolfCourseCommand {
@@ -52,6 +56,13 @@ public final class GolfCourseCommand {
                         .executes(ctx -> status(ctx.getSource())))
                 .then(Commands.literal("courses")
                         .executes(ctx -> list(ctx.getSource())))
+                .then(Commands.literal("history")
+                        .executes(ctx -> history(ctx.getSource())))
+                .then(Commands.literal("leaderboard")
+                        .then(Commands.argument("course", StringArgumentType.string())
+                                .executes(ctx -> leaderboard(
+                                        ctx.getSource(),
+                                        StringArgumentType.getString(ctx, "course")))))
                 .then(Commands.literal("view")
                         .executes(ctx -> viewCurrent(ctx.getSource(), false))
                         .then(Commands.argument("course", StringArgumentType.string())
@@ -120,6 +131,29 @@ public final class GolfCourseCommand {
                                                         ctx.getSource(),
                                                         StringArgumentType.getString(ctx, "course"),
                                                         IntegerArgumentType.getInteger(ctx, "hole"))))))
+                        .then(Commands.literal("meta")
+                                .then(Commands.argument("course", StringArgumentType.string())
+                                        .then(Commands.literal("author")
+                                                .then(Commands.argument("value", StringArgumentType.greedyString())
+                                                        .executes(ctx -> setCourseMeta(ctx.getSource(), StringArgumentType.getString(ctx, "course"), "author", StringArgumentType.getString(ctx, "value")))))
+                                        .then(Commands.literal("description")
+                                                .then(Commands.argument("value", StringArgumentType.greedyString())
+                                                        .executes(ctx -> setCourseMeta(ctx.getSource(), StringArgumentType.getString(ctx, "course"), "description", StringArgumentType.getString(ctx, "value")))))
+                                        .then(Commands.literal("difficulty")
+                                                .then(Commands.argument("value", StringArgumentType.greedyString())
+                                                        .executes(ctx -> setCourseMeta(ctx.getSource(), StringArgumentType.getString(ctx, "course"), "difficulty", StringArgumentType.getString(ctx, "value")))))
+                                        .then(Commands.literal("location")
+                                                .then(Commands.argument("value", StringArgumentType.greedyString())
+                                                        .executes(ctx -> setCourseMeta(ctx.getSource(), StringArgumentType.getString(ctx, "course"), "location", StringArgumentType.getString(ctx, "value")))))))
+                        .then(Commands.literal("holename")
+                                .then(Commands.argument("course", StringArgumentType.string())
+                                        .then(Commands.argument("hole", IntegerArgumentType.integer(1, 99))
+                                                .then(Commands.argument("name", StringArgumentType.greedyString())
+                                                        .executes(ctx -> setHoleName(
+                                                                ctx.getSource(),
+                                                                StringArgumentType.getString(ctx, "course"),
+                                                                IntegerArgumentType.getInteger(ctx, "hole"),
+                                                                StringArgumentType.getString(ctx, "name")))))))
                         .then(Commands.literal("validate")
                                 .then(Commands.argument("course", StringArgumentType.string())
                                         .executes(ctx -> validate(
@@ -268,10 +302,16 @@ public final class GolfCourseCommand {
         }
 
         source.sendSuccess(() -> Component.literal(
-                "Course " + course.name() + " - " + course.holes().size() + " configured holes"), false);
+                "Course " + course.name() + " - " + course.holes().size() + " configured holes - par " + course.totalPar()), false);
+        if (!course.author().isBlank() || !course.location().isBlank() || !course.difficulty().isBlank()) {
+            source.sendSuccess(() -> Component.literal(
+                    "Author: " + blankDash(course.author()) + " | Location: " + blankDash(course.location())
+                            + " | Difficulty: " + blankDash(course.difficulty())), false);
+        }
+        if (!course.description().isBlank()) source.sendSuccess(() -> Component.literal(course.description()), false);
         for (HoleDefinition hole : course.holes().values()) {
             source.sendSuccess(() -> Component.literal(
-                    "Hole " + hole.number() + " par " + hole.par()
+                    "Hole " + hole.number() + (hole.name().isBlank() ? "" : " - " + hole.name()) + " par " + hole.par()
                             + " dim=" + hole.dimension() + " tee=" + hole.tee() + " cup=" + hole.cup()
                             + " guides=" + hole.guidePoints().size()
                             + (hole.complete() ? " [ready]" : " [incomplete]")), false);
@@ -437,6 +477,77 @@ public final class GolfCourseCommand {
                         + " | round " + GolfRoundManager.totalStrokes(player)
                         + " (" + formatRelative(GolfRoundManager.totalRelativeToPar(player)) + ")"), false);
         return 1;
+    }
+
+    private static int setCourseMeta(CommandSourceStack source, String courseName, String field, String value) {
+        GolfCourseSavedData data = GolfCourseSavedData.get(source.getServer());
+        CourseDefinition course = data.course(courseName).orElse(null);
+        if (course == null) {
+            source.sendFailure(Component.literal("Unknown course: " + courseName));
+            return 0;
+        }
+        switch (field) {
+            case "author" -> course.setAuthor(value);
+            case "description" -> course.setDescription(value);
+            case "difficulty" -> course.setDifficulty(value);
+            case "location" -> course.setLocation(value);
+            default -> { return 0; }
+        }
+        data.changed();
+        source.sendSuccess(() -> Component.literal("Updated " + course.name() + " " + field + "."), true);
+        return 1;
+    }
+
+    private static int setHoleName(CommandSourceStack source, String courseName, int holeNumber, String name) {
+        GolfCourseSavedData data = GolfCourseSavedData.get(source.getServer());
+        CourseDefinition course = data.course(courseName).orElse(null);
+        HoleDefinition hole = course == null ? null : course.hole(holeNumber);
+        if (hole == null) {
+            source.sendFailure(Component.literal("Unknown course/hole."));
+            return 0;
+        }
+        course.putHole(hole.withName(name));
+        data.changed();
+        source.sendSuccess(() -> Component.literal("Named " + course.name() + " hole " + holeNumber + " '" + name + "'."), true);
+        return 1;
+    }
+
+    private static int history(CommandSourceStack source) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        var rounds = GolfRecordsSavedData.get(source.getServer()).forPlayer(player.getUUID());
+        if (rounds.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("No recorded Project Golf rounds yet."), false);
+            return 1;
+        }
+        source.sendSuccess(() -> Component.literal("Recent Project Golf rounds:"), false);
+        rounds.stream().limit(8).forEach(round -> source.sendSuccess(() -> Component.literal(
+                round.course() + " | " + (round.completed() ? "complete" : "exited") + " | "
+                        + round.holes().size() + " holes | " + round.totalStrokes() + " strokes | "
+                        + formatRelative(round.relativeToPar())), false));
+        return 1;
+    }
+
+    private static int leaderboard(CommandSourceStack source, String courseName) {
+        var rounds = GolfRecordsSavedData.get(source.getServer()).completedLeaderboard(courseName);
+        if (rounds.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("No completed rounds recorded for " + courseName + "."), false);
+            return 1;
+        }
+        Map<java.util.UUID, ScorecardData> bestByPlayer = new LinkedHashMap<>();
+        for (ScorecardData round : rounds) bestByPlayer.putIfAbsent(round.playerId(), round);
+        source.sendSuccess(() -> Component.literal(courseName + " - course records"), false);
+        final int[] rank = {1};
+        bestByPlayer.values().stream().limit(10).forEach(round -> {
+            int r = rank[0]++;
+            source.sendSuccess(() -> Component.literal(
+                    r + ". " + round.playerName() + " - " + round.totalStrokes() + " ("
+                            + formatRelative(round.relativeToPar()) + ")"), false);
+        });
+        return 1;
+    }
+
+    private static String blankDash(String value) {
+        return value == null || value.isBlank() ? "-" : value;
     }
 
     private static String formatRelative(int value) {

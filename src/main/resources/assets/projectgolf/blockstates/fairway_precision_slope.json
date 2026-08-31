@@ -1,0 +1,194 @@
+{
+  "variants": {
+    "facing=south,profile=0_1": {
+      "model": "projectgolf:block/fairway_precision_slope_0_1",
+      "uvlock": true
+    },
+    "facing=west,profile=0_1": {
+      "model": "projectgolf:block/fairway_precision_slope_0_1",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=0_1": {
+      "model": "projectgolf:block/fairway_precision_slope_0_1",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=0_1": {
+      "model": "projectgolf:block/fairway_precision_slope_0_1",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=0_2": {
+      "model": "projectgolf:block/fairway_precision_slope_0_2",
+      "uvlock": true
+    },
+    "facing=west,profile=0_2": {
+      "model": "projectgolf:block/fairway_precision_slope_0_2",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=0_2": {
+      "model": "projectgolf:block/fairway_precision_slope_0_2",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=0_2": {
+      "model": "projectgolf:block/fairway_precision_slope_0_2",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=0_3": {
+      "model": "projectgolf:block/fairway_precision_slope_0_3",
+      "uvlock": true
+    },
+    "facing=west,profile=0_3": {
+      "model": "projectgolf:block/fairway_precision_slope_0_3",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=0_3": {
+      "model": "projectgolf:block/fairway_precision_slope_0_3",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=0_3": {
+      "model": "projectgolf:block/fairway_precision_slope_0_3",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=0_4": {
+      "model": "projectgolf:block/fairway_precision_slope_0_4",
+      "uvlock": true
+    },
+    "facing=west,profile=0_4": {
+      "model": "projectgolf:block/fairway_precision_slope_0_4",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=0_4": {
+      "model": "projectgolf:block/fairway_precision_slope_0_4",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=0_4": {
+      "model": "projectgolf:block/fairway_precision_slope_0_4",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=1_2": {
+      "model": "projectgolf:block/fairway_precision_slope_1_2",
+      "uvlock": true
+    },
+    "facing=west,profile=1_2": {
+      "model": "projectgolf:block/fairway_precision_slope_1_2",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=1_2": {
+      "model": "projectgolf:block/fairway_precision_slope_1_2",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=1_2": {
+      "model": "projectgolf:block/fairway_precision_slope_1_2",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=1_3": {
+      "model": "projectgolf:block/fairway_precision_slope_1_3",
+      "uvlock": true
+    },
+    "facing=west,profile=1_3": {
+      "model": "projectgolf:block/fairway_precision_slope_1_3",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=1_3": {
+      "model": "projectgolf:block/fairway_precision_slope_1_3",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=1_3": {
+      "model": "projectgolf:block/fairway_precision_slope_1_3",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=1_4": {
+      "model": "projectgolf:block/fairway_precision_slope_1_4",
+      "uvlock": true
+    },
+    "facing=west,profile=1_4": {
+      "model": "projectgolf:block/fairway_precision_slope_1_4",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=1_4": {
+      "model": "projectgolf:block/fairway_precision_slope_1_4",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=1_4": {
+      "model": "projectgolf:block/fairway_precision_slope_1_4",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=2_3": {
+      "model": "projectgolf:block/fairway_precision_slope_2_3",
+      "uvlock": true
+    },
+    "facing=west,profile=2_3": {
+      "model": "projectgolf:block/fairway_precision_slope_2_3",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=2_3": {
+      "model": "projectgolf:block/fairway_precision_slope_2_3",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=2_3": {
+      "model": "projectgolf:block/fairway_precision_slope_2_3",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=2_4": {
+      "model": "projectgolf:block/fairway_precision_slope_2_4",
+      "uvlock": true
+    },
+    "facing=west,profile=2_4": {
+      "model": "projectgolf:block/fairway_precision_slope_2_4",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=2_4": {
+      "model": "projectgolf:block/fairway_precision_slope_2_4",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=2_4": {
+      "model": "projectgolf:block/fairway_precision_slope_2_4",
+      "uvlock": true,
+      "y": 270
+    },
+    "facing=south,profile=3_4": {
+      "model": "projectgolf:block/fairway_precision_slope_3_4",
+      "uvlock": true
+    },
+    "facing=west,profile=3_4": {
+      "model": "projectgolf:block/fairway_precision_slope_3_4",
+      "uvlock": true,
+      "y": 90
+    },
+    "facing=north,profile=3_4": {
+      "model": "projectgolf:block/fairway_precision_slope_3_4",
+      "uvlock": true,
+      "y": 180
+    },
+    "facing=east,profile=3_4": {
+      "model": "projectgolf:block/fairway_precision_slope_3_4",
+      "uvlock": true,
+      "y": 270
+    }
+  }
+}

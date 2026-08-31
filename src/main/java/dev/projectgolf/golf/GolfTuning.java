@@ -35,7 +35,7 @@ public final class GolfTuning {
     public static final float BALL_MAX_UP_STEP = 0.26f;
 
     public static final int POWER_SWEEP_TICKS = 30;
-    public static final int ACCURACY_SWEEP_TICKS = 22;
+    public static final int ACCURACY_SWEEP_TICKS = 20;
     public static final double PERFECT_ACCURACY_WINDOW = 0.08;
 
     public static final double SWING_BALL_RADIUS = 5.0;

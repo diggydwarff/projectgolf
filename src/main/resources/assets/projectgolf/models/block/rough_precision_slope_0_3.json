@@ -1,0 +1,7 @@
+{
+  "parent": "projectgolf:block/green_slope_0_3",
+  "textures": {
+    "all": "minecraft:block/grass_block_top",
+    "particle": "minecraft:block/grass_block_top"
+  }
+}

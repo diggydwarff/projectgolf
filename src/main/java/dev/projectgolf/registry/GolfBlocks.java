@@ -55,6 +55,23 @@ public final class GolfBlocks {
     public static final DeferredBlock<GolfSlopeBlock> ROUGH_SLOPE =
             BLOCKS.register("rough_slope", () -> new GolfSlopeBlock(GolfSurface.ROUGH, turfProperties().noOcclusion()));
 
+    // Matching coarse + precision shaping pieces for every main golf lie. Keep the existing block
+    // ids/save behavior intact and add the missing complementary variants rather than repurposing
+    // old blocks.
+    public static final DeferredBlock<GolfSlopeBlock> GREEN_FULL_SLOPE =
+            BLOCKS.register("green_full_slope", () -> new GolfSlopeBlock(GolfSurface.GREEN, turfProperties().noOcclusion()));
+    public static final DeferredBlock<GolfSlopeBlock> BUNKER_FULL_SLOPE =
+            BLOCKS.register("bunker_full_slope", () -> new GolfSlopeBlock(
+                    GolfSurface.BUNKER,
+                    BlockBehaviour.Properties.of().strength(0.5f).noOcclusion()
+                            .sound(net.minecraft.world.level.block.SoundType.SAND)));
+    public static final DeferredBlock<PuttingGreenSlopeBlock> FAIRWAY_PRECISION_SLOPE =
+            BLOCKS.register("fairway_precision_slope", () -> new PuttingGreenSlopeBlock(
+                    GolfSurface.FAIRWAY, turfProperties().noOcclusion()));
+    public static final DeferredBlock<PuttingGreenSlopeBlock> ROUGH_PRECISION_SLOPE =
+            BLOCKS.register("rough_precision_slope", () -> new PuttingGreenSlopeBlock(
+                    GolfSurface.ROUGH, turfProperties().noOcclusion()));
+
     // Coarse half-height landscaping for the wider course. Putting greens additionally keep their
     // precision 1/4 layers and variable slopes for fine shaping.
     public static final DeferredBlock<GolfSurfaceSlabBlock> GRASS_SLAB =

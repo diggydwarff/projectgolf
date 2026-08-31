@@ -3,6 +3,7 @@
   "values": [
     "projectgolf:rough",
     "projectgolf:rough_slope",
-    "projectgolf:rough_slab"
+    "projectgolf:rough_slab",
+    "projectgolf:rough_precision_slope"
   ]
 }

@@ -28,6 +28,7 @@ public final class GolfCreativeTabs {
                             output.accept(GolfBallItem.coloredStack(color));
                         }
                         output.accept(GolfItems.GOLF_BAG.get());
+                        output.accept(GolfItems.SCORECARD.get());
                         output.accept(GolfItems.DRIVER.get());
                         output.accept(GolfItems.WOOD.get());
                         output.accept(GolfItems.IRON.get());
@@ -47,6 +48,7 @@ public final class GolfCreativeTabs {
                         output.accept(GolfItems.PUTTING_GREEN_SLAB.get());
                         output.accept(GolfItems.PUTTING_GREEN_LAYER.get());
                         output.accept(GolfItems.GREEN_SLOPE.get());
+                        output.accept(GolfItems.GREEN_FULL_SLOPE.get());
                         output.accept(GolfItems.ROUGH.get());
                         output.accept(GolfItems.ROUGH_SLAB.get());
                         output.accept(GolfItems.DEEP_ROUGH.get());
@@ -54,8 +56,11 @@ public final class GolfCreativeTabs {
                         output.accept(GolfItems.BUNKER_SAND.get());
                         output.accept(GolfItems.BUNKER_SAND_SLAB.get());
                         output.accept(GolfItems.BUNKER_SLOPE.get());
+                        output.accept(GolfItems.BUNKER_FULL_SLOPE.get());
                         output.accept(GolfItems.FAIRWAY_SLOPE.get());
+                        output.accept(GolfItems.FAIRWAY_PRECISION_SLOPE.get());
                         output.accept(GolfItems.ROUGH_SLOPE.get());
+                        output.accept(GolfItems.ROUGH_PRECISION_SLOPE.get());
                         output.accept(GolfItems.GOLF_CUP.get());
                         output.accept(GolfItems.TEE_MARKER.get());
                         output.accept(GolfItems.COURSE_DESIGNER.get());

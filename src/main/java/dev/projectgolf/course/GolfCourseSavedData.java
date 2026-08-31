@@ -31,6 +31,10 @@ public final class GolfCourseSavedData extends SavedData {
         for (int i = 0; i < courseList.size(); i++) {
             CompoundTag courseTag = courseList.getCompound(i);
             CourseDefinition course = new CourseDefinition(courseTag.getString("Name"));
+            course.setAuthor(courseTag.getString("Author"));
+            course.setDescription(courseTag.getString("Description"));
+            course.setDifficulty(courseTag.getString("Difficulty"));
+            course.setLocation(courseTag.getString("Location"));
 
             ListTag holes = courseTag.getList("Holes", Tag.TAG_COMPOUND);
             for (int h = 0; h < holes.size(); h++) {
@@ -50,7 +54,8 @@ public final class GolfCourseSavedData extends SavedData {
                         holeTag.getString("Dimension"),
                         tee,
                         cup,
-                        guidePoints));
+                        guidePoints,
+                        holeTag.getString("Name")));
             }
 
             data.courses.put(key(course.name()), course);
@@ -108,6 +113,10 @@ public final class GolfCourseSavedData extends SavedData {
         for (CourseDefinition course : courses.values()) {
             CompoundTag courseTag = new CompoundTag();
             courseTag.putString("Name", course.name());
+            courseTag.putString("Author", course.author());
+            courseTag.putString("Description", course.description());
+            courseTag.putString("Difficulty", course.difficulty());
+            courseTag.putString("Location", course.location());
 
             ListTag holes = new ListTag();
             for (HoleDefinition hole : course.holes().values()) {
@@ -115,6 +124,7 @@ public final class GolfCourseSavedData extends SavedData {
                 holeTag.putInt("Number", hole.number());
                 holeTag.putInt("Par", hole.par());
                 holeTag.putString("Dimension", hole.dimension() == null ? "" : hole.dimension());
+                holeTag.putString("Name", hole.name());
                 if (hole.tee() != null) {
                     holeTag.putBoolean("HasTee", true);
                     holeTag.putLong("Tee", hole.tee().asLong());

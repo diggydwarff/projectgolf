@@ -1,0 +1,7 @@
+{
+  "parent": "projectgolf:block/tinted_slope_grass",
+  "textures": {
+    "all": "minecraft:block/sand",
+    "particle": "minecraft:block/sand"
+  }
+}

@@ -1,12 +1,16 @@
 package dev.projectgolf.course;
 
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Optional;
+import java.util.TreeMap;
 
 public final class CourseDefinition {
     private final String name;
     private final Map<Integer, HoleDefinition> holes = new TreeMap<>();
+    private String author = "";
+    private String description = "";
+    private String difficulty = "";
+    private String location = "";
 
     public CourseDefinition(String name) {
         this.name = name;
@@ -14,6 +18,42 @@ public final class CourseDefinition {
 
     public String name() {
         return name;
+    }
+
+    public String author() {
+        return author;
+    }
+
+    public String description() {
+        return description;
+    }
+
+    public String difficulty() {
+        return difficulty;
+    }
+
+    public String location() {
+        return location;
+    }
+
+    public void setAuthor(String author) {
+        this.author = clean(author);
+    }
+
+    public void setDescription(String description) {
+        this.description = clean(description);
+    }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = clean(difficulty);
+    }
+
+    public void setLocation(String location) {
+        this.location = clean(location);
+    }
+
+    public int totalPar() {
+        return holes.values().stream().filter(HoleDefinition::complete).mapToInt(HoleDefinition::par).sum();
     }
 
     public Map<Integer, HoleDefinition> holes() {
@@ -45,5 +85,9 @@ public final class CourseDefinition {
                 .filter(HoleDefinition::complete)
                 .filter(hole -> hole.number() > number)
                 .findFirst();
+    }
+
+    private static String clean(String value) {
+        return value == null ? "" : value.trim();
     }
 }

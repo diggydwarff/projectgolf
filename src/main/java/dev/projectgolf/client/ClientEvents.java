@@ -46,7 +46,9 @@ public final class ClientEvents {
                 GolfBlocks.PUTTING_GREEN.get(), GolfBlocks.PUTTING_GREEN_SLAB.get(), GolfBlocks.PUTTING_GREEN_LAYER.get(),
                 GolfBlocks.ROUGH.get(), GolfBlocks.ROUGH_SLAB.get(),
                 GolfBlocks.DEEP_ROUGH.get(), GolfBlocks.DEEP_ROUGH_SLAB.get(),
-                GolfBlocks.GREEN_SLOPE.get(), GolfBlocks.FAIRWAY_SLOPE.get(), GolfBlocks.ROUGH_SLOPE.get());
+                GolfBlocks.GREEN_SLOPE.get(), GolfBlocks.GREEN_FULL_SLOPE.get(),
+                GolfBlocks.FAIRWAY_SLOPE.get(), GolfBlocks.FAIRWAY_PRECISION_SLOPE.get(),
+                GolfBlocks.ROUGH_SLOPE.get(), GolfBlocks.ROUGH_PRECISION_SLOPE.get());
     }
 
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
@@ -69,7 +71,9 @@ public final class ClientEvents {
                 GolfItems.PUTTING_GREEN.get(), GolfItems.PUTTING_GREEN_SLAB.get(), GolfItems.PUTTING_GREEN_LAYER.get(),
                 GolfItems.ROUGH.get(), GolfItems.ROUGH_SLAB.get(),
                 GolfItems.DEEP_ROUGH.get(), GolfItems.DEEP_ROUGH_SLAB.get(),
-                GolfItems.GREEN_SLOPE.get(), GolfItems.FAIRWAY_SLOPE.get(), GolfItems.ROUGH_SLOPE.get());
+                GolfItems.GREEN_SLOPE.get(), GolfItems.GREEN_FULL_SLOPE.get(),
+                GolfItems.FAIRWAY_SLOPE.get(), GolfItems.FAIRWAY_PRECISION_SLOPE.get(),
+                GolfItems.ROUGH_SLOPE.get(), GolfItems.ROUGH_PRECISION_SLOPE.get());
     }
 
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -80,6 +84,9 @@ public final class ClientEvents {
 
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
         if (mc.player == null) ClientRoundState.clear();
+        // The scorecard is a HUD overlay rather than a Screen so it cannot enter Minecraft's
+        // menu-blur pipeline. Close it if the player opens a real menu.
+        if (ClientScorecardScreen.active() && mc.screen != null) ClientScorecardScreen.close();
         if (GolfKeyMappings.HOLE_VIEW.consumeClick()) {
             if (ClientHoleView.active()) {
                 ClientHoleView.stop();
@@ -101,6 +108,12 @@ public final class ClientEvents {
     }
 
     public static void onUseInput(InputEvent.InteractionKeyMappingTriggered event) {
+        if (event.isUseItem() && ClientScorecardScreen.active()) {
+            ClientScorecardScreen.close();
+            event.setSwingHand(false);
+            event.setCanceled(true);
+            return;
+        }
         if (event.isUseItem()
                 && net.minecraft.client.Minecraft.getInstance().player != null
                 && net.minecraft.client.Minecraft.getInstance().player.getMainHandItem().getItem() instanceof GolfClubItem) {
@@ -133,7 +146,10 @@ public final class ClientEvents {
         if (item == GolfItems.DEEP_ROUGH.get()) return GolfBlocks.DEEP_ROUGH.get();
         if (item == GolfItems.DEEP_ROUGH_SLAB.get()) return GolfBlocks.DEEP_ROUGH_SLAB.get();
         if (item == GolfItems.GREEN_SLOPE.get()) return GolfBlocks.GREEN_SLOPE.get();
+        if (item == GolfItems.GREEN_FULL_SLOPE.get()) return GolfBlocks.GREEN_FULL_SLOPE.get();
         if (item == GolfItems.FAIRWAY_SLOPE.get()) return GolfBlocks.FAIRWAY_SLOPE.get();
+        if (item == GolfItems.FAIRWAY_PRECISION_SLOPE.get()) return GolfBlocks.FAIRWAY_PRECISION_SLOPE.get();
+        if (item == GolfItems.ROUGH_PRECISION_SLOPE.get()) return GolfBlocks.ROUGH_PRECISION_SLOPE.get();
         return GolfBlocks.ROUGH_SLOPE.get();
     }
 
@@ -146,10 +162,12 @@ public final class ClientEvents {
         // Still biome-driven and still the vanilla grass texture, but the surface tiers now have
         // enough separation to read from a fairway-height camera without returning to neon turf.
         if (block == GolfBlocks.TEE_GRASS.get() || block == GolfBlocks.TEE_GRASS_SLAB.get()) return adjust(base, 1.070f, 1.095f, 1.030f);
-        if (block == GolfBlocks.FAIRWAY.get() || block == GolfBlocks.FAIRWAY_SLAB.get() || block == GolfBlocks.FAIRWAY_SLOPE.get()) return adjust(base, 1.035f, 1.055f, 1.015f);
+        if (block == GolfBlocks.FAIRWAY.get() || block == GolfBlocks.FAIRWAY_SLAB.get()
+                || block == GolfBlocks.FAIRWAY_SLOPE.get() || block == GolfBlocks.FAIRWAY_PRECISION_SLOPE.get()) return adjust(base, 1.035f, 1.055f, 1.015f);
         if (block == GolfBlocks.FRINGE.get() || block == GolfBlocks.FRINGE_SLAB.get()) return adjust(base, 0.965f, 0.990f, 0.955f);
         if (block == GolfBlocks.PUTTING_GREEN.get() || block == GolfBlocks.PUTTING_GREEN_SLAB.get()
-                || block == GolfBlocks.PUTTING_GREEN_LAYER.get() || block == GolfBlocks.GREEN_SLOPE.get()) return adjust(base, 0.900f, 0.985f, 0.885f);
+                || block == GolfBlocks.PUTTING_GREEN_LAYER.get() || block == GolfBlocks.GREEN_SLOPE.get()
+                || block == GolfBlocks.GREEN_FULL_SLOPE.get()) return adjust(base, 0.900f, 0.985f, 0.885f);
         if (block == GolfBlocks.DEEP_ROUGH.get() || block == GolfBlocks.DEEP_ROUGH_SLAB.get()) return adjust(base, 0.790f, 0.850f, 0.785f);
         return adjust(base, 0.865f, 0.920f, 0.855f);
     }

@@ -17,6 +17,10 @@
   "block.projectgolf.green_slope": "Putting Green Slope",
   "block.projectgolf.fairway_slope": "Fairway Slope",
   "block.projectgolf.rough_slope": "Rough Slope",
+  "block.projectgolf.green_full_slope": "Putting Green Full Slope",
+  "block.projectgolf.bunker_full_slope": "Bunker Full Slope",
+  "block.projectgolf.fairway_precision_slope": "Fairway Precision Slope",
+  "block.projectgolf.rough_precision_slope": "Rough Precision Slope",
   "block.projectgolf.golf_cup": "Golf Cup",
   "block.projectgolf.tee_marker": "Tee Marker",
   "block.projectgolf.debug_oob": "Optional OOB Marker (Debug)",
@@ -41,5 +45,7 @@
   "tooltip.projectgolf.golf_bag.summary": "Clubs: %s  Balls: %s",
   "tooltip.projectgolf.golf_bag.restriction": "Stores golf clubs and golf balls only",
   "tooltip.projectgolf.golf_ball.color": "Color: %s",
-  "item.projectgolf.golf_ball.colored": "%s Golf Ball"
+  "item.projectgolf.golf_ball.colored": "%s Golf Ball",
+  "item.projectgolf.scorecard": "Golf Scorecard",
+  "tooltip.projectgolf.scorecard.open": "Right-click to open scorecard"
 }

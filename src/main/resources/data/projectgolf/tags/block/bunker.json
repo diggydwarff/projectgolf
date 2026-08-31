@@ -3,6 +3,7 @@
   "values": [
     "projectgolf:bunker_sand",
     "projectgolf:bunker_sand_slab",
-    "projectgolf:bunker_slope"
+    "projectgolf:bunker_slope",
+    "projectgolf:bunker_full_slope"
   ]
 }

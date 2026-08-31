@@ -7,6 +7,7 @@ import dev.projectgolf.item.GolfBallItem;
 import dev.projectgolf.item.GolfBagItem;
 import dev.projectgolf.item.GolfClubItem;
 import dev.projectgolf.item.GolfDebugWandItem;
+import dev.projectgolf.item.ScorecardItem;
 import dev.projectgolf.item.GoldenSpotterItem;
 import dev.projectgolf.item.CourseDesignerItem;
 import net.minecraft.world.item.BlockItem;
@@ -41,6 +42,9 @@ public final class GolfItems {
     public static final DeferredItem<GolfBagItem> GOLF_BAG =
             ITEMS.registerItem("golf_bag", GolfBagItem::new, new Item.Properties());
 
+    public static final DeferredItem<ScorecardItem> SCORECARD =
+            ITEMS.registerItem("scorecard", ScorecardItem::new, new Item.Properties());
+
     public static final DeferredItem<CourseDesignerItem> COURSE_DESIGNER =
             ITEMS.registerItem("course_designer", CourseDesignerItem::new, new Item.Properties());
 
@@ -59,6 +63,10 @@ public final class GolfItems {
     public static final DeferredItem<BlockItem> BUNKER_SLOPE = blockItem("bunker_slope", GolfBlocks.BUNKER_SLOPE);
     public static final DeferredItem<BlockItem> FAIRWAY_SLOPE = blockItem("fairway_slope", GolfBlocks.FAIRWAY_SLOPE);
     public static final DeferredItem<BlockItem> ROUGH_SLOPE = blockItem("rough_slope", GolfBlocks.ROUGH_SLOPE);
+    public static final DeferredItem<BlockItem> GREEN_FULL_SLOPE = blockItem("green_full_slope", GolfBlocks.GREEN_FULL_SLOPE);
+    public static final DeferredItem<BlockItem> BUNKER_FULL_SLOPE = blockItem("bunker_full_slope", GolfBlocks.BUNKER_FULL_SLOPE);
+    public static final DeferredItem<BlockItem> FAIRWAY_PRECISION_SLOPE = blockItem("fairway_precision_slope", GolfBlocks.FAIRWAY_PRECISION_SLOPE);
+    public static final DeferredItem<BlockItem> ROUGH_PRECISION_SLOPE = blockItem("rough_precision_slope", GolfBlocks.ROUGH_PRECISION_SLOPE);
     public static final DeferredItem<BlockItem> GRASS_SLAB = blockItem("grass_slab", GolfBlocks.GRASS_SLAB);
     public static final DeferredItem<BlockItem> TEE_GRASS_SLAB = blockItem("tee_grass_slab", GolfBlocks.TEE_GRASS_SLAB);
     public static final DeferredItem<BlockItem> FAIRWAY_SLAB = blockItem("fairway_slab", GolfBlocks.FAIRWAY_SLAB);

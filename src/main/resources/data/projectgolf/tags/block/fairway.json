@@ -3,6 +3,7 @@
   "values": [
     "projectgolf:fairway",
     "projectgolf:fairway_slope",
-    "projectgolf:fairway_slab"
+    "projectgolf:fairway_slab",
+    "projectgolf:fairway_precision_slope"
   ]
 }

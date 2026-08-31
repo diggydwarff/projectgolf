@@ -344,6 +344,15 @@ public class GolfBallEntity extends ThrowableItemProjectile {
             handledSlopeLip = true;
         }
 
+        // The stepped voxel mesh is only an approximation of a golf ramp. If a collision occurs
+        // while the ball is already travelling along the axis of a slope, never reinterpret one
+        // of those internal terrace faces as a real wall. Retain the shot velocity and let the
+        // grounded slope force decide whether a weak uphill shot keeps climbing, stops, or rolls
+        // naturally back downhill. Side-on impacts still behave as walls.
+        if ((collidedX || collidedZ) && !handledSlopeLip && movingAlongGolfSlope(beforeMove, requested)) {
+            handledSlopeLip = true;
+        }
+
         GolfSurface surface = currentLie();
         Vec3 velocity = requested;
         boolean greenLayerStep = isPuttingGreenLayerAt(beforeMove) || isPuttingGreenLayerAt(position());
@@ -504,17 +513,17 @@ public class GolfBallEntity extends ThrowableItemProjectile {
 
         for (BlockPos pos : candidates) {
             BlockState state = level().getBlockState(pos);
-            if (!(state.getBlock() instanceof PuttingGreenSlopeBlock slope)) continue;
-            if (state.getValue(PuttingGreenSlopeBlock.FACING) != movement) continue;
+            SlopeGeometry slope = slopeGeometry(state);
+            if (slope == null || slope.uphill() != movement) continue;
 
-            double lowSurfaceY = pos.getY() + slope.lowHeight(state);
+            double lowSurfaceY = pos.getY() + slope.lowHeight();
             // Only assist a slope whose low edge actually meets the ball's current terrace. Do not
             // turn this into generic auto-climb for mismatched elevations or ordinary blocks.
-            if (Math.abs(lowSurfaceY - from.y) > maxUpStep() + 0.035) continue;
+            if (Math.abs(lowSurfaceY - from.y) > maxUpStep() + 0.16) continue;
 
-            double firstSurfaceY = pos.getY() + slope.firstCollisionHeight(state);
+            double firstSurfaceY = pos.getY() + slope.firstCollisionHeight();
             double requiredLift = firstSurfaceY - from.y;
-            if (requiredLift < -0.02 || requiredLift > maxUpStep() + 0.035) continue;
+            if (requiredLift < -0.02 || requiredLift > maxUpStep() + 0.16) continue;
             return new SlopeEntry(firstSurfaceY);
         }
         return null;
@@ -590,10 +599,10 @@ public class GolfBallEntity extends ThrowableItemProjectile {
 
         for (BlockPos slopePos : slopeCandidates) {
             BlockState slopeState = level().getBlockState(slopePos);
-            if (!(slopeState.getBlock() instanceof PuttingGreenSlopeBlock slope)) continue;
-            if (slopeState.getValue(PuttingGreenSlopeBlock.FACING) != movement) continue;
+            SlopeGeometry slope = slopeGeometry(slopeState);
+            if (slope == null || slope.uphill() != movement) continue;
 
-            double highSurfaceY = slopePos.getY() + slope.highHeight(slopeState);
+            double highSurfaceY = slopePos.getY() + slope.highHeight();
             // We only care about the crest once the ball is already near the high edge vertically.
             if (from.y < highSurfaceY - maxUpStep() - 0.05 || from.y > highSurfaceY + 0.08) continue;
 
@@ -621,10 +630,10 @@ public class GolfBallEntity extends ThrowableItemProjectile {
 
         for (BlockPos slopePos : slopeCandidates) {
             BlockState slopeState = level().getBlockState(slopePos);
-            if (!(slopeState.getBlock() instanceof PuttingGreenSlopeBlock slope)) continue;
-            if (slopeState.getValue(PuttingGreenSlopeBlock.FACING) != movement) continue;
+            SlopeGeometry slope = slopeGeometry(slopeState);
+            if (slope == null || slope.uphill() != movement) continue;
 
-            double highSurfaceY = slopePos.getY() + slope.highHeight(slopeState);
+            double highSurfaceY = slopePos.getY() + slope.highHeight();
             if (from.y < highSurfaceY - maxUpStep() - 0.05 || from.y > highSurfaceY + 0.08) continue;
 
             BlockPos destination = slopePos.relative(movement);
@@ -661,6 +670,36 @@ public class GolfBallEntity extends ThrowableItemProjectile {
     }
 
     private record SlopeExit(double destinationSurfaceY) {}
+
+    /** Shared geometry description for both coarse full-block and precision quarter-profile slopes. */
+    private static @Nullable SlopeGeometry slopeGeometry(BlockState state) {
+        if (state.getBlock() instanceof PuttingGreenSlopeBlock slope) {
+            return new SlopeGeometry(
+                    state.getValue(PuttingGreenSlopeBlock.FACING),
+                    slope.lowHeight(state), slope.highHeight(state), slope.firstCollisionHeight(state));
+        }
+        if (state.getBlock() instanceof GolfSlopeBlock) {
+            return new SlopeGeometry(
+                    state.getValue(GolfSlopeBlock.FACING),
+                    0.0, 1.0, 0.25);
+        }
+        return null;
+    }
+
+    private record SlopeGeometry(Direction uphill, double lowHeight, double highHeight, double firstCollisionHeight) {}
+
+    private boolean movingAlongGolfSlope(Vec3 position, Vec3 requested) {
+        Direction movement = horizontalDirection(requested);
+        if (movement == null) return false;
+        BlockPos origin = BlockPos.containing(position);
+        BlockPos[] candidates = { origin, origin.below(), origin.relative(movement), origin.relative(movement).below() };
+        for (BlockPos pos : candidates) {
+            SlopeGeometry slope = slopeGeometry(level().getBlockState(pos));
+            if (slope == null) continue;
+            if (movement == slope.uphill() || movement == slope.uphill().getOpposite()) return true;
+        }
+        return false;
+    }
 
     private @Nullable SlopeInfo currentSlopeInfo() {
         BlockState state = level().getBlockState(blockPosition());

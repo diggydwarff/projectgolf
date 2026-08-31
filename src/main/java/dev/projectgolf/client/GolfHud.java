@@ -13,6 +13,11 @@ public final class GolfHud {
 
     public static void render(GuiGraphics graphics) {
         Minecraft mc = Minecraft.getInstance();
+
+        // Scorecards must be drawn in the final HUD layer, after any Screen blur/post effect.
+        // Stop here while one is open so normal golf HUD elements do not sit on top of it.
+        ClientScorecardScreen.renderOverlay(graphics);
+        if (ClientScorecardScreen.active()) return;
         ClientHoleView.renderHud(graphics);
         if (ClientHoleView.active()) return;
         if (mc.player == null) return;
@@ -91,7 +96,8 @@ public final class GolfHud {
         int x = 8;
         int y = 8;
         int width = 206;
-        int height = 70;
+        int extraPlayers = Math.min(4, Math.max(0, state.leaderboard().size() - 1));
+        int height = 70 + (extraPlayers > 0 ? 8 + extraPlayers * 10 : 0);
 
         // Compact broadcast-style score card: restrained shadow, one warm golf accent, and
         // separate information rows. It stays readable without looking like a debug rectangle.
@@ -127,6 +133,21 @@ public final class GolfHud {
         graphics.drawString(mc.font, "WIND", x + 7, y + 57, 0xFF8FA598, false);
         graphics.drawString(mc.font, GolfWind.hudText(mc.level), x + 39, y + 57, 0xFFE7F3FF, false);
         drawWindIndicator(graphics, mc, x + width - 16, y + 59);
+
+        if (extraPlayers > 0) {
+            int ly = y + 72;
+            graphics.fill(x + 7, ly - 3, x + width - 7, ly - 2, 0x503E4A40);
+            graphics.drawString(mc.font, "GROUP", x + 7, ly + 1, 0xFF8FA598, false);
+            int row = 0;
+            for (var line : state.leaderboard()) {
+                if (line.name().equals(mc.player.getGameProfile().getName())) continue;
+                if (row >= 4) break;
+                int rel = line.totalStrokes() - line.totalPar();
+                String text = line.name() + "  H" + line.hole() + "  " + line.strokes() + " st  " + formatRelative(rel);
+                graphics.drawString(mc.font, text, x + 47, ly + 1 + row * 10, 0xFFE7E7E7, false);
+                row++;
+            }
+        }
     }
 
     /**

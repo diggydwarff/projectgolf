@@ -1,0 +1,24 @@
+{
+  "variants": {
+    "facing=south": {
+      "model": "projectgolf:block/green_full_slope",
+      "y": 0,
+      "uvlock": true
+    },
+    "facing=west": {
+      "model": "projectgolf:block/green_full_slope",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=north": {
+      "model": "projectgolf:block/green_full_slope",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=east": {
+      "model": "projectgolf:block/green_full_slope",
+      "y": 270,
+      "uvlock": true
+    }
+  }
+}

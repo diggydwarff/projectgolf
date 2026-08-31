@@ -20,10 +20,18 @@ public class GolfSlopeBlock extends Block {
 
     // VoxelShapes are immutable. Cache all orientations once instead of rebuilding eight boxes
     // during every collision/shape query on a course full of slopes.
-    private static final VoxelShape SOUTH_SHAPE = makeShape(Direction.SOUTH);
-    private static final VoxelShape NORTH_SHAPE = makeShape(Direction.NORTH);
-    private static final VoxelShape EAST_SHAPE = makeShape(Direction.EAST);
-    private static final VoxelShape WEST_SHAPE = makeShape(Direction.WEST);
+    private static final VoxelShape SOUTH_SHAPE = makeShape(Direction.SOUTH, 8);
+    private static final VoxelShape NORTH_SHAPE = makeShape(Direction.NORTH, 8);
+    private static final VoxelShape EAST_SHAPE = makeShape(Direction.EAST, 8);
+    private static final VoxelShape WEST_SHAPE = makeShape(Direction.WEST, 8);
+
+    // Use only four collision terraces, matching the precision slope implementation. The visible
+    // outline remains finer, but the ball/player no longer has to resolve eight tiny vertical lips
+    // that can be mistaken for walls and produce an artificial ricochet.
+    private static final VoxelShape SOUTH_COLLISION = makeShape(Direction.SOUTH, 4);
+    private static final VoxelShape NORTH_COLLISION = makeShape(Direction.NORTH, 4);
+    private static final VoxelShape EAST_COLLISION = makeShape(Direction.EAST, 4);
+    private static final VoxelShape WEST_COLLISION = makeShape(Direction.WEST, 4);
 
     private final GolfSurface surface;
 
@@ -62,12 +70,23 @@ public class GolfSlopeBlock extends Block {
         };
     }
 
-    private static VoxelShape makeShape(Direction facing) {
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return switch (state.getValue(FACING)) {
+            case NORTH -> NORTH_COLLISION;
+            case EAST -> EAST_COLLISION;
+            case WEST -> WEST_COLLISION;
+            default -> SOUTH_COLLISION;
+        };
+    }
+
+    private static VoxelShape makeShape(Direction facing, int slices) {
         VoxelShape result = Shapes.empty();
-        for (int i = 0; i < 8; i++) {
-            double a0 = i * 2.0;
-            double a1 = a0 + 2.0;
-            double height = (i + 1) * 2.0;
+        double slice = 16.0 / slices;
+        for (int i = 0; i < slices; i++) {
+            double a0 = i * slice;
+            double a1 = a0 + slice;
+            double height = (i + 1) * slice;
             result = switch (facing) {
                 case SOUTH -> Shapes.or(result, box(0, 0, a0, 16, height, a1));
                 case NORTH -> Shapes.or(result, box(0, 0, 16 - a1, 16, height, 16 - a0));

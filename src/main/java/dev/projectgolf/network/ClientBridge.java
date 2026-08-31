@@ -1,5 +1,7 @@
 package dev.projectgolf.network;
 
+import net.minecraft.nbt.CompoundTag;
+
 /**
  * Common-side bridge for optional client presentation code.
  *
@@ -22,9 +24,15 @@ public final class ClientBridge {
         void show(RoundStatePayload payload);
     }
 
+    @FunctionalInterface
+    public interface ScorecardPresenter {
+        void show(CompoundTag data);
+    }
+
     private static ShotSummaryPresenter shotSummaryPresenter = (title, message) -> {};
     private static HoleViewPresenter holeViewPresenter = payload -> {};
     private static RoundStatePresenter roundStatePresenter = payload -> {};
+    private static ScorecardPresenter scorecardPresenter = data -> {};
 
     private ClientBridge() {}
 
@@ -50,5 +58,13 @@ public final class ClientBridge {
 
     public static void showRoundState(RoundStatePayload payload) {
         roundStatePresenter.show(payload);
+    }
+
+    public static void installScorecardPresenter(ScorecardPresenter presenter) {
+        scorecardPresenter = presenter == null ? data -> {} : presenter;
+    }
+
+    public static void showScorecard(CompoundTag data) {
+        scorecardPresenter.show(data);
     }
 }
