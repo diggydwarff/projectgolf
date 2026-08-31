@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "projectgolf:golf_ball_dyeing",
+  "ingredients": [
+    {
+      "item": "projectgolf:golf_ball"
+    },
+    {
+      "item": "minecraft:green_dye"
+    }
+  ],
+  "result": {
+    "id": "projectgolf:golf_ball",
+    "count": 1,
+    "components": {
+      "minecraft:base_color": "green"
+    }
+  }
+}
