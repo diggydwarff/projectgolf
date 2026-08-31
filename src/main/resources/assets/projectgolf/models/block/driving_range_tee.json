@@ -1,0 +1,6 @@
+{
+  "parent": "projectgolf:block/tee_marker",
+  "textures": {
+    "tee": "minecraft:block/yellow_concrete"
+  }
+}

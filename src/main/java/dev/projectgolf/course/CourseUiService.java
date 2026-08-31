@@ -37,9 +37,19 @@ public final class CourseUiService {
         CourseDefinition course = courses.course(courseName).orElse(null);
 
         switch (type) {
-            case "refresh_browser" -> openBrowser(player);
+            case "refresh_browser" -> {
+                // Preserve the course/hole the player was actually looking at when leaving Course
+                // Design so the browser and Course Designer wand do not silently jump elsewhere.
+                syncBuilderSelection(player, course, action.getInt("Hole"));
+                openBrowser(player);
+            }
             case "refresh_history" -> openHistory(player);
-            case "refresh_builder" -> openBuilder(player);
+            case "refresh_builder" -> {
+                // Entering Course Design from the clubhouse must edit the highlighted course, not
+                // whichever course happened to be armed the last time the wand was used.
+                syncBuilderSelection(player, course, action.getInt("Hole"));
+                openBuilder(player);
+            }
             case "play" -> {
                 if (course == null) return;
                 HoleDefinition hole = action.getInt("Hole") > 0 ? course.hole(action.getInt("Hole")) : course.firstCompleteHole().orElse(null);
@@ -60,7 +70,11 @@ public final class CourseUiService {
                     player.sendSystemMessage(Component.literal("That hole is incomplete. Link both its Tee Marker and Golf Cup first."));
                     return;
                 }
-                if (!hole.dimension().equals(player.level().dimension().location().toString())) return;
+                if (!hole.dimension().equals(player.level().dimension().location().toString())) {
+                    player.sendSystemMessage(Component.literal("That hole is in " + hole.dimension()
+                            + ". Travel there before viewing it."));
+                    return;
+                }
                 PacketDistributor.sendToPlayer(player, new HoleViewPayload(course.name(), hole.number(), hole.par(),
                         hole.tee(), hole.cup(), hole.guidePoints(), type.equals("flyover")));
             }
@@ -198,6 +212,13 @@ public final class CourseUiService {
             root.putString("SelectedCourse", sel.course()); root.putInt("SelectedHole", sel.hole()); root.putInt("SelectedPar", sel.par());
         });
         PacketDistributor.sendToPlayer(player, new CourseUiPayload(root));
+    }
+
+    private static void syncBuilderSelection(ServerPlayer player, CourseDefinition course, int requestedHole) {
+        if (course == null) return;
+        HoleDefinition hole = requestedHole > 0 ? course.hole(requestedHole) : null;
+        if (hole == null) hole = course.holes().values().stream().findFirst().orElse(null);
+        CourseBuilderManager.select(player, course.name(), hole == null ? 1 : hole.number(), hole == null ? 4 : hole.par());
     }
 
     private static String clean(String value, int max) {

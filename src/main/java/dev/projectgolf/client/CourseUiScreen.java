@@ -70,14 +70,15 @@ public final class CourseUiScreen extends Screen {
 
     public static void open(CompoundTag data) {
         Minecraft mc = Minecraft.getInstance();
-        if (activeScreen != null) activeScreen.removed();
+        // Presentation modes are mutually exclusive. Never leave a detached flyover camera or
+        // paper scorecard active behind an interactive course menu.
+        ClientHoleView.stop();
+        ClientScorecardScreen.close();
+
         CourseUiScreen screen = new CourseUiScreen(data);
+        // Set the new active reference before Minecraft removes the previous CourseUiScreen. Its
+        // removed() callback can then see that it is stale and will not clear this new screen.
         activeScreen = screen;
-        // This is a real interactive menu. Let Minecraft render the world/menu background first,
-        // then draw every Project Golf panel, label and widget in Screen#render. Keeping the whole
-        // foreground in one Screen pass is important: HUD layers are composited before the menu
-        // background effect on 1.21.1 and therefore get softened, while Screen foreground widgets
-        // remain crisp.
         mc.setScreen(screen);
     }
 
@@ -88,10 +89,16 @@ public final class CourseUiScreen extends Screen {
     public static void closeOverlay() {
         CourseUiScreen screen = activeScreen;
         if (screen == null) return;
-        activeScreen = null;
-        screen.removed();
+
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen == null) mc.mouseHandler.grabMouse();
+        activeScreen = null;
+        // CourseUiScreen is a real vanilla Screen. Clearing only activeScreen leaves
+        // Minecraft.screen installed, which is why Play/Flyover/Select Wand could run behind a
+        // menu that never disappeared. Remove the actual screen through Minecraft.
+        if (mc.screen == screen) mc.setScreen(null);
+        else screen.removed();
+
+        if (mc.screen == null && mc.player != null) mc.mouseHandler.grabMouse();
     }
 
     public static void tickOverlay() {
@@ -459,12 +466,24 @@ public final class CourseUiScreen extends Screen {
     private int nextHoleNumber() { CompoundTag c=selectedCourse(); if(c==null)return 1; int max=0; for(Tag t:c.getList("Holes",Tag.TAG_COMPOUND))max=Math.max(max,((CompoundTag)t).getInt("Number")); return Math.min(99,max+1); }
     private CompoundTag hole(CompoundTag c, int number) { for (Tag t : c.getList("Holes", Tag.TAG_COMPOUND)) { CompoundTag h=(CompoundTag)t; if(h.getInt("Number")==number)return h; } return null; }
 
-    private void request(String action) { send(action, null); }
+    private void request(String action) {
+        CompoundTag extra = new CompoundTag();
+        extra.putInt("Hole", selectedHole);
+        send(action, extra);
+    }
     private void courseAction(String action, int hole) {
         CompoundTag extra = new CompoundTag(); extra.putInt("Hole", hole); send(action, extra);
         closeOverlay();
     }
-    private void openRound() { if (rounds.isEmpty()) return; CompoundTag e = new CompoundTag(); e.putString("RoundId", rounds.get(selectedRound).roundId().toString()); send("open_round", e); }
+    private void openRound() {
+        if (rounds.isEmpty()) return;
+        CompoundTag e = new CompoundTag();
+        e.putString("RoundId", rounds.get(selectedRound).roundId().toString());
+        send("open_round", e);
+        // The scorecard is a world HUD overlay, not a child of this menu. Leave the archive
+        // immediately so the incoming ScorecardPayload cannot remain hidden behind Course UI.
+        closeOverlay();
+    }
     private void createCourse() { CompoundTag e=new CompoundTag(); e.putString("Name", courseName.getValue()); send("create_course", e); }
     private void saveMeta() { CompoundTag e=new CompoundTag(); e.putString("Author",author.getValue());e.putString("Difficulty",difficulty.getValue());e.putString("Location",location.getValue());e.putString("Description",description.getValue());e.putInt("Hole",selectedHole);e.putInt("Par",parse(holePar.getValue(),4));send("save_meta",e); }
     private void saveHole() { CompoundTag e=holeFields(); selectedHole=e.getInt("Hole"); send("save_hole",e); }
