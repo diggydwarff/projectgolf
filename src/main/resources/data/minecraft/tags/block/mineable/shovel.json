@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "projectgolf:tee_grass",
+    "projectgolf:fairway",
+    "projectgolf:fringe",
+    "projectgolf:putting_green",
+    "projectgolf:rough",
+    "projectgolf:deep_rough",
+    "projectgolf:bunker_sand",
+    "projectgolf:green_slope",
+    "projectgolf:fairway_slope",
+    "projectgolf:rough_slope"
+  ]
+}

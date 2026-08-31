@@ -1,0 +1,23 @@
+{
+  "itemGroup.projectgolf.main": "Project Golf",
+  "item.projectgolf.golf_ball": "Golf Ball",
+  "item.projectgolf.driver": "Driver",
+  "item.projectgolf.wood": "Wood",
+  "item.projectgolf.iron": "Iron",
+  "item.projectgolf.wedge": "Wedge",
+  "item.projectgolf.putter": "Putter",
+  "item.projectgolf.debug_wand": "Golf Debug Wand",
+  "block.projectgolf.tee_grass": "Tee Grass",
+  "block.projectgolf.fairway": "Fairway",
+  "block.projectgolf.fringe": "Fringe",
+  "block.projectgolf.putting_green": "Putting Green",
+  "block.projectgolf.rough": "Rough",
+  "block.projectgolf.deep_rough": "Deep Rough",
+  "block.projectgolf.bunker_sand": "Bunker Sand",
+  "block.projectgolf.green_slope": "Putting Green Slope",
+  "block.projectgolf.fairway_slope": "Fairway Slope",
+  "block.projectgolf.rough_slope": "Rough Slope",
+  "block.projectgolf.golf_cup": "Golf Cup",
+  "block.projectgolf.tee_marker": "Tee Marker",
+  "block.projectgolf.debug_oob": "Debug Out-of-Bounds Surface"
+}

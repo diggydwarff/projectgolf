@@ -1,0 +1,126 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.144'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = neo_version
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        data {
+            data()
+            programArguments.addAll '--mod', mod_id, '--all', '--output', file('src/generated/resources/').absolutePath,
+                    '--existing', file('src/main/resources/').absolutePath
+        }
+
+        configureEach {
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+
+    // ModDevGradle does not automatically put Minecraft/NeoForge on the ordinary
+    // JUnit test source-set. Enabling unitTest wires src/test against the modding
+    // classpath so tests may safely use classes such as Vec3 and Direction.
+    unitTest {
+        enable()
+        testedMod = mods.projectgolf
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+configurations {
+    // Matches the official NeoForge 1.21.1 ModDevGradle MDK.
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+repositories {
+    mavenCentral()
+
+    // Optional development-only RPL resolution. Runtime integration itself is tag-based and
+    // does not compile against RPL classes.
+    maven {
+        name = 'RealRobotix'
+        url = 'https://maven.realrobotix.me/master/'
+        content { includeGroup 'com.rbasamoyai' }
+    }
+}
+
+dependencies {
+    // Keep RPL as a runtime dependency, not a compile API dependency. If this coordinate ever
+    // changes upstream, the mod still compiles because integration is data-tag based.
+    localRuntime "com.rbasamoyai:ritchiesprojectilelib:2.1.2+mc.1.21.1-neoforge"
+    // Unit tests boot Project Golf through NeoForge, so its required RPL dependency must also
+    // be available on the test runtime classpath.
+    testRuntimeOnly "com.rbasamoyai:ritchiesprojectilelib:2.1.2+mc.1.21.1-neoforge"
+
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [
+            minecraft_version: minecraft_version,
+            neo_version      : neo_version,
+            mod_id           : mod_id,
+            mod_name         : mod_name,
+            mod_license      : mod_license,
+            mod_version      : mod_version,
+            mod_authors      : mod_authors,
+            mod_description  : mod_description
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from 'src/main/templates'
+    into layout.buildDirectory.dir('generated/sources/modMetadata')
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('repo')
+        }
+    }
+}

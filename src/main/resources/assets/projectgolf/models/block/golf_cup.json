@@ -1,0 +1,54 @@
+{
+  "textures": {
+    "turf": "minecraft:block/moss_block",
+    "cup": "minecraft:block/black_concrete",
+    "pole": "minecraft:block/iron_block",
+    "flag": "minecraft:block/red_wool",
+    "particle": "minecraft:block/moss_block"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down": { "texture": "#turf", "cullface": "down" },
+        "up": { "texture": "#turf" },
+        "north": { "texture": "#turf", "cullface": "north" },
+        "south": { "texture": "#turf", "cullface": "south" },
+        "west": { "texture": "#turf", "cullface": "west" },
+        "east": { "texture": "#turf", "cullface": "east" }
+      }
+    },
+    {
+      "from": [5, 16, 5],
+      "to": [11, 16.02, 11],
+      "faces": {
+        "up": { "texture": "#cup" }
+      }
+    },
+    {
+      "from": [7.5, 16, 7.5],
+      "to": [8.5, 32, 8.5],
+      "faces": {
+        "down": { "texture": "#pole" },
+        "up": { "texture": "#pole" },
+        "north": { "texture": "#pole" },
+        "south": { "texture": "#pole" },
+        "west": { "texture": "#pole" },
+        "east": { "texture": "#pole" }
+      }
+    },
+    {
+      "from": [8.5, 25, 7.75],
+      "to": [15.5, 31, 8.25],
+      "faces": {
+        "down": { "texture": "#flag" },
+        "up": { "texture": "#flag" },
+        "north": { "texture": "#flag" },
+        "south": { "texture": "#flag" },
+        "west": { "texture": "#flag" },
+        "east": { "texture": "#flag" }
+      }
+    }
+  ]
+}

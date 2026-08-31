@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "projectgolf:putting_green",
+    "projectgolf:green_slope",
+    "projectgolf:golf_cup"
+  ]
+}

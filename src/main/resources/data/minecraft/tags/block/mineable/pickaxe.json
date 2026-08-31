@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "projectgolf:golf_cup",
+    "projectgolf:tee_marker",
+    "projectgolf:debug_oob"
+  ]
+}
