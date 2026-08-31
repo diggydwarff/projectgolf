@@ -1,14 +1,18 @@
 package dev.projectgolf.client;
 
 import dev.projectgolf.entity.GolfBallEntity;
+import dev.projectgolf.item.GolfBallItem;
 import dev.projectgolf.network.RoundStatePayload;
 import dev.projectgolf.registry.GolfItems;
 import dev.projectgolf.visual.GolfVisualEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+
+import org.joml.Vector3f;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -30,7 +34,7 @@ public final class ClientSpotter {
             marker(mc, Vec3.atCenterOf(round.tee()), GolfVisualEffects.TEE_DUST, 13.0, false);
             marker(mc, Vec3.atCenterOf(round.cup()), GolfVisualEffects.GOLD_DUST, 19.0, true);
         }
-        ownedBall(mc).ifPresent(ball -> marker(mc, ball.position(), GolfVisualEffects.BALL_DUST, 23.0, true));
+        ownedBall(mc).ifPresent(ball -> marker(mc, ball.position(), ballDust(ball), 23.0, true));
     }
 
     public static void renderHud(GuiGraphics graphics) {
@@ -44,8 +48,9 @@ public final class ClientSpotter {
 
         Optional<GolfBallEntity> ball = ownedBall(mc);
         if (ball.isPresent()) {
+            int ballColor = 0xFF000000 | GolfBallItem.renderColor(ball.get().getItem());
             graphics.drawCenteredString(mc.font,
-                    locator(mc, "BALL", ball.get().position()), x, y, 0xFF72E8FF);
+                    locator(mc, "BALL", ball.get().position()), x, y, ballColor);
         } else {
             graphics.drawCenteredString(mc.font, "BALL - not in loaded view", x, y, 0xFF9EA7AB);
         }
@@ -61,6 +66,24 @@ public final class ClientSpotter {
         } else {
             graphics.drawCenteredString(mc.font, "No active course - ball locator only", x, y, 0xFFC8C8C8);
         }
+    }
+
+
+    private static DustParticleOptions ballDust(GolfBallEntity ball) {
+        int rgb = GolfBallItem.renderColor(ball.getItem());
+        float r = ((rgb >> 16) & 0xFF) / 255.0f;
+        float g = ((rgb >> 8) & 0xFF) / 255.0f;
+        float b = (rgb & 0xFF) / 255.0f;
+        // Very dark balls still need a readable locator beam, so lift only the beacon color's
+        // minimum brightness; the ball itself remains the exact selected dye shade.
+        float max = Math.max(r, Math.max(g, b));
+        if (max < 0.38f) {
+            float scale = 0.38f / Math.max(0.01f, max);
+            r = Math.min(1.0f, r * scale);
+            g = Math.min(1.0f, g * scale);
+            b = Math.min(1.0f, b * scale);
+        }
+        return new DustParticleOptions(new Vector3f(r, g, b), 1.55f);
     }
 
     private static boolean held(Minecraft mc) {

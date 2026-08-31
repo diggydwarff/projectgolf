@@ -1,7 +1,7 @@
 {
   "parent": "projectgolf:block/tinted_slope_grass",
   "textures": {
-    "all": "projectgolf:block/rough",
-    "particle": "projectgolf:block/rough"
+    "all": "minecraft:block/grass_block_top",
+    "particle": "minecraft:block/grass_block_top"
   }
 }

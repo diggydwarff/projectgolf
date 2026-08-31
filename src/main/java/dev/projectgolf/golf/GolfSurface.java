@@ -16,7 +16,7 @@ public enum GolfSurface {
     TEE("Tee", 0.962, 0.32, 1.00, 1.00),
     FAIRWAY("Fairway", 0.957, 0.30, 1.00, 1.00),
     FRINGE("Fringe", 0.935, 0.26, 0.97, 1.04),
-    GREEN("Green", 0.984, 0.20, 1.00, 0.96),
+    GREEN("Green", 0.982, 0.20, 1.00, 0.96),
     ROUGH("Rough", 0.855, 0.22, 0.84, 1.25),
     DEEP_ROUGH("Deep Rough", 0.745, 0.18, 0.66, 1.55),
     BUNKER("Bunker", 0.58, 0.08, 0.58, 1.65),

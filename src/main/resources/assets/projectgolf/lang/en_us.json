@@ -34,5 +34,12 @@
   "key.categories.projectgolf": "Project Golf",
   "key.projectgolf.hole_view": "View Current Hole",
   "key.projectgolf.flyover": "Hole Flyover",
-  "item.projectgolf.golden_spotter": "Golden Spotter"
+  "item.projectgolf.golden_spotter": "Golden Spotter",
+  "item.projectgolf.golf_bag": "Golf Bag",
+  "container.projectgolf.golf_bag": "Golf Bag",
+  "tooltip.projectgolf.golf_bag.contents": "Slots used: %s/%s",
+  "tooltip.projectgolf.golf_bag.summary": "Clubs: %s  Balls: %s",
+  "tooltip.projectgolf.golf_bag.restriction": "Stores golf clubs and golf balls only",
+  "tooltip.projectgolf.golf_ball.color": "Color: %s",
+  "item.projectgolf.golf_ball.colored": "%s Golf Ball"
 }

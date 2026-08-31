@@ -17,6 +17,18 @@ public final class GolfVisualEffects {
             new DustParticleOptions(new Vector3f(1.0f, 1.0f, 1.0f), 1.35f);
     public static final DustParticleOptions GOLD_DUST =
             new DustParticleOptions(new Vector3f(1.0f, 0.72f, 0.08f), 1.45f);
+    // Smaller, cooler guide dots are intentionally distinct from celebration/locator particles.
+    // They are placed deterministically along the predicted polyline, never scattered randomly.
+    public static final DustParticleOptions GUIDE_DUST =
+            new DustParticleOptions(new Vector3f(0.88f, 0.96f, 1.0f), 0.36f);
+    public static final DustParticleOptions RED_DUST =
+            new DustParticleOptions(new Vector3f(1.0f, 0.16f, 0.12f), 1.55f);
+    public static final DustParticleOptions BLUE_DUST =
+            new DustParticleOptions(new Vector3f(0.18f, 0.48f, 1.0f), 1.55f);
+    public static final DustParticleOptions GREEN_DUST =
+            new DustParticleOptions(new Vector3f(0.18f, 1.0f, 0.32f), 1.55f);
+    public static final DustParticleOptions PURPLE_DUST =
+            new DustParticleOptions(new Vector3f(0.78f, 0.28f, 1.0f), 1.55f);
     public static final DustParticleOptions BALL_DUST =
             new DustParticleOptions(new Vector3f(0.20f, 0.88f, 1.0f), 1.55f);
     public static final DustParticleOptions TEE_DUST =
@@ -68,50 +80,70 @@ public final class GolfVisualEffects {
 
         switch (tier) {
             case ACE -> {
-                level.sendParticles(GOLD_DUST, position.x, position.y + 0.65, position.z,
-                        52, 0.95, 0.75, 0.95, 0.075);
-                level.sendParticles(WHITE_DUST, position.x, position.y + 1.10, position.z,
-                        34, 1.20, 1.00, 1.20, 0.045);
-                level.sendParticles(ParticleTypes.END_ROD, position.x, position.y + 0.85, position.z,
-                        22, 0.85, 0.85, 0.85, 0.055);
-                for (int i = 0; i < 6; i++) {
-                    level.sendParticles(GOLD_DUST, position.x, position.y + 0.35 + i * 0.55, position.z,
-                            5, 0.22 + i * 0.06, 0.08, 0.22 + i * 0.06, 0.018);
-                }
+                // Hole-in-one is intentionally in a class of its own: a vertical launch from the
+                // cup followed by several colorful firework-like bursts. No other score gets the
+                // rainbow treatment.
+                level.sendParticles(ParticleTypes.FIREWORK, position.x, position.y + 0.45, position.z,
+                        42, 0.42, 1.55, 0.42, 0.085);
+                colorfulBurst(level, position.add(0.0, 2.2, 0.0), RED_DUST);
+                colorfulBurst(level, position.add(0.65, 3.05, 0.30), BLUE_DUST);
+                colorfulBurst(level, position.add(-0.55, 3.75, -0.35), GREEN_DUST);
+                colorfulBurst(level, position.add(0.15, 4.55, -0.55), PURPLE_DUST);
+                level.sendParticles(GOLD_DUST, position.x, position.y + 1.15, position.z,
+                        66, 1.10, 1.35, 1.10, 0.085);
+                level.sendParticles(ParticleTypes.END_ROD, position.x, position.y + 1.4, position.z,
+                        30, 1.0, 1.1, 1.0, 0.065);
                 level.playSound(null, position.x, position.y, position.z,
-                        SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0f, 1.18f);
+                        SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.PLAYERS, 1.0f, 1.05f);
+                level.playSound(null, position.x, position.y + 2.5, position.z,
+                        SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.PLAYERS, 1.0f, 1.0f);
+                level.playSound(null, position.x, position.y + 3.5, position.z,
+                        SoundEvents.FIREWORK_ROCKET_TWINKLE, SoundSource.PLAYERS, 0.95f, 1.18f);
                 level.playSound(null, position.x, position.y, position.z,
-                        SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.0f, 1.55f);
+                        SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0f, 1.20f);
             }
             case EAGLE_OR_BETTER -> {
-                level.sendParticles(GOLD_DUST, position.x, position.y + 0.55, position.z,
-                        30, 0.72, 0.58, 0.72, 0.055);
-                level.sendParticles(ParticleTypes.END_ROD, position.x, position.y + 0.72, position.z,
-                        10, 0.52, 0.52, 0.52, 0.035);
+                level.sendParticles(GOLD_DUST, position.x, position.y + 0.75, position.z,
+                        54, 0.95, 0.90, 0.95, 0.072);
+                level.sendParticles(WHITE_DUST, position.x, position.y + 1.05, position.z,
+                        28, 0.90, 0.80, 0.90, 0.045);
+                level.sendParticles(ParticleTypes.END_ROD, position.x, position.y + 0.95, position.z,
+                        18, 0.72, 0.72, 0.72, 0.050);
                 level.playSound(null, position.x, position.y, position.z,
-                        SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.72f, 1.34f);
+                        SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.85f, 1.30f);
             }
             case BIRDIE -> {
-                level.sendParticles(GOLD_DUST, position.x, position.y + 0.48, position.z,
-                        20, 0.55, 0.42, 0.55, 0.045);
-                level.sendParticles(ParticleTypes.END_ROD, position.x, position.y + 0.60, position.z,
-                        6, 0.34, 0.34, 0.34, 0.025);
+                // Roughly the old alpha.11.1 ace-scale gold celebration: special and obvious, but
+                // the true hole-in-one now towers above it with fireworks.
+                level.sendParticles(GOLD_DUST, position.x, position.y + 0.65, position.z,
+                        44, 0.88, 0.72, 0.88, 0.065);
+                level.sendParticles(WHITE_DUST, position.x, position.y + 1.00, position.z,
+                        24, 0.90, 0.72, 0.90, 0.040);
+                level.sendParticles(ParticleTypes.END_ROD, position.x, position.y + 0.82, position.z,
+                        14, 0.62, 0.62, 0.62, 0.045);
                 level.playSound(null, position.x, position.y, position.z,
-                        SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.72f, 1.42f);
+                        SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.85f, 1.46f);
             }
             case PAR -> {
-                level.sendParticles(GOLD_DUST, position.x, position.y + 0.42, position.z,
-                        11, 0.38, 0.28, 0.38, 0.032);
-                level.sendParticles(WHITE_DUST, position.x, position.y + 0.52, position.z,
-                        7, 0.30, 0.25, 0.30, 0.020);
+                level.sendParticles(GOLD_DUST, position.x, position.y + 0.45, position.z,
+                        14, 0.42, 0.32, 0.42, 0.035);
+                level.sendParticles(WHITE_DUST, position.x, position.y + 0.55, position.z,
+                        8, 0.32, 0.26, 0.32, 0.022);
                 level.playSound(null, position.x, position.y, position.z,
-                        SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.48f, 1.28f);
+                        SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.52f, 1.28f);
             }
             case BOGEY_OR_WORSE, PRACTICE -> {
                 level.sendParticles(WHITE_DUST, position.x, position.y + 0.35, position.z,
                         6, 0.24, 0.18, 0.24, 0.018);
             }
         }
+    }
+
+    private static void colorfulBurst(ServerLevel level, Vec3 center, DustParticleOptions color) {
+        level.sendParticles(color, center.x, center.y, center.z,
+                28, 0.72, 0.58, 0.72, 0.085);
+        level.sendParticles(ParticleTypes.FIREWORK, center.x, center.y, center.z,
+                12, 0.62, 0.48, 0.62, 0.055);
     }
 
     public static CelebrationTier celebrationTier(int strokes, int par) {

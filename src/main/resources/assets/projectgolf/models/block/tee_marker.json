@@ -1,6 +1,42 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "minecraft:block/white_concrete"
-  }
+    "top": "minecraft:block/grass_block_top",
+    "side": "minecraft:block/dirt",
+    "bottom": "minecraft:block/dirt",
+    "tee": "minecraft:block/white_concrete",
+    "particle": "minecraft:block/grass_block_top"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down":  {"texture": "#bottom", "cullface": "down"},
+        "up":    {"texture": "#top", "cullface": "up", "tintindex": 0},
+        "north": {"texture": "#side", "cullface": "north"},
+        "south": {"texture": "#side", "cullface": "south"},
+        "west":  {"texture": "#side", "cullface": "west"},
+        "east":  {"texture": "#side", "cullface": "east"}
+      }
+    },
+    {
+      "from": [7.5, 16, 7.5],
+      "to": [8.5, 18.5, 8.5],
+      "faces": {
+        "down": {"texture": "#tee"}, "up": {"texture": "#tee"},
+        "north": {"texture": "#tee"}, "south": {"texture": "#tee"},
+        "west": {"texture": "#tee"}, "east": {"texture": "#tee"}
+      }
+    },
+    {
+      "from": [6.75, 18.15, 6.75],
+      "to": [9.25, 18.75, 9.25],
+      "faces": {
+        "down": {"texture": "#tee"}, "up": {"texture": "#tee"},
+        "north": {"texture": "#tee"}, "south": {"texture": "#tee"},
+        "west": {"texture": "#tee"}, "east": {"texture": "#tee"}
+      }
+    }
+  ]
 }

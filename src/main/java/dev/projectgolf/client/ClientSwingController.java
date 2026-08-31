@@ -9,7 +9,6 @@ import dev.projectgolf.network.SwingPayload;
 import dev.projectgolf.visual.GolfVisualEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -166,16 +165,11 @@ public final class ClientSwingController {
         };
 
         List<Vec3> points = TrajectoryPredictor.predict(player, ball, clubItem.club(), previewPower);
-        int stride = clubItem.club() == ClubType.PUTTER
-                ? GolfTuning.PUTTER_PREVIEW_PARTICLE_STRIDE
-                : GolfTuning.PREVIEW_PARTICLE_STRIDE;
-
-        // Clean dotted guide: no continuous End Rod swarm. The target pin does the emphasis.
-        for (int i = 0; i < points.size(); i += stride) {
-            Vec3 p = points.get(i);
-            player.level().addAlwaysVisibleParticle(
-                    GolfVisualEffects.WHITE_DUST, true, p.x, p.y, p.z, 0, 0, 0);
-        }
+        // Resample the entire predicted polyline at uniform distance. The old every-Nth-point
+        // rendering made long shots look like unrelated particle clumps because simulation points
+        // are not evenly spaced in world space. This produces one clean dotted guide from ball to
+        // target, including curved airborne arcs and slope-following putts.
+        renderPredictionGuide(player, points, clubItem.club() == ClubType.PUTTER);
 
         if (!points.isEmpty()) {
             Vec3 end = points.get(points.size() - 1);
@@ -217,6 +211,44 @@ public final class ClientSwingController {
                 player.level().addAlwaysVisibleParticle(
                         GolfVisualEffects.GOLD_DUST, true, end.x, end.y + 1.95, end.z, 0, 0, 0);
             }
+        }
+    }
+
+    private static void renderPredictionGuide(LocalPlayer player, List<Vec3> points, boolean putter) {
+        if (points.size() < 2) return;
+
+        double totalLength = 0.0;
+        for (int i = 1; i < points.size(); i++) {
+            totalLength += points.get(i - 1).distanceTo(points.get(i));
+        }
+        if (totalLength < 1.0e-4) return;
+
+        int maxParticles = putter ? GolfTuning.PUTTER_GUIDE_MAX_PARTICLES : GolfTuning.PREVIEW_GUIDE_MAX_PARTICLES;
+        double minSpacing = putter ? GolfTuning.PUTTER_GUIDE_MIN_SPACING : GolfTuning.PREVIEW_GUIDE_MIN_SPACING;
+        int count = Math.max(2, Math.min(maxParticles, (int) Math.ceil(totalLength / minSpacing) + 1));
+        double spacing = totalLength / (count - 1);
+
+        int segment = 1;
+        double segmentStartDistance = 0.0;
+        double segmentLength = points.get(0).distanceTo(points.get(1));
+        for (int sample = 0; sample < count; sample++) {
+            double wanted = Math.min(totalLength, sample * spacing);
+            while (segment < points.size() - 1 && wanted > segmentStartDistance + segmentLength) {
+                segmentStartDistance += segmentLength;
+                segment++;
+                segmentLength = points.get(segment - 1).distanceTo(points.get(segment));
+            }
+
+            Vec3 a = points.get(segment - 1);
+            Vec3 b = points.get(segment);
+            double local = segmentLength <= 1.0e-7 ? 0.0
+                    : Mth.clamp((wanted - segmentStartDistance) / segmentLength, 0.0, 1.0);
+            Vec3 p = a.lerp(b, local);
+            // Fixed world-space dots. The same samples are refreshed together before the old
+            // dust expires, so there is no traveling/pulsing phase and the guide reads as one
+            // calm trajectory rather than an animated effect.
+            player.level().addAlwaysVisibleParticle(
+                    GolfVisualEffects.GUIDE_DUST, true, p.x, p.y, p.z, 0, 0, 0);
         }
     }
 

@@ -46,6 +46,7 @@ public final class GolfDebugCommand {
         ServerPlayer player = source.getPlayerOrException();
         List<ItemStack> stacks = List.of(
                 new ItemStack(GolfItems.GOLF_BALL.get(), 16),
+                new ItemStack(GolfItems.GOLF_BAG.get()),
                 new ItemStack(GolfItems.DRIVER.get()),
                 new ItemStack(GolfItems.WOOD.get()),
                 new ItemStack(GolfItems.IRON.get()),

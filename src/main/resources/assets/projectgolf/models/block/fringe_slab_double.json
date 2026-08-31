@@ -1,7 +1,7 @@
 {
-  "parent": "projectgolf:block/fringe",
+  "parent": "minecraft:block/grass_block_top",
   "textures": {
-    "all": "projectgolf:block/fringe",
-    "particle": "projectgolf:block/fringe"
+    "all": "minecraft:block/grass_block_top",
+    "particle": "minecraft:block/grass_block_top"
   }
 }

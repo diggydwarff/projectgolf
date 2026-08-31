@@ -12,9 +12,12 @@ public final class GolfTuning {
     // Tactical golf wind: enough to visibly move a long shot without turning every breeze into a
     // random-number penalty. Strength 1.0 adds this much horizontal velocity per airborne tick.
     public static final double WIND_MAX_ACCELERATION = 0.0022;
-    public static final int WIND_WISP_BASE_INTERVAL_TICKS = 9;
+    public static final int WIND_WISP_BASE_INTERVAL_TICKS = 20;
     public static final double MAX_BALL_SPEED = 4.25;
     public static final double STOP_HORIZONTAL_SPEED = 0.012;
+    // A tiny fixed rolling resistance removes the long low-speed "ice glide" tail on greens
+    // without destroying the long, smooth roll that makes putting greens useful.
+    public static final double GREEN_ROLLING_RESISTANCE = 0.00055;
     public static final int STOP_SETTLE_TICKS = 8;
     public static final int MAX_MOVING_TICKS = 20 * 35;
     public static final int STATIONARY_RECHECK_TICKS = 20;
@@ -46,10 +49,17 @@ public final class GolfTuning {
     // of particles across the green.
     public static final int PUTTER_PREVIEW_MAX_TICKS = 180;
     public static final int PUTTER_PREVIEW_POINT_INTERVAL_TICKS = 4;
-    // Visibility should come from strong, spaced markers rather than particle density.
-    public static final int PREVIEW_PARTICLE_INTERVAL_TICKS = 8;
+    // Stable guide: refresh the same fixed sample positions before their previous particles fade.
+    // Unlike the old staggered groups, nothing travels/pulses down the line from frame to frame.
+    public static final int PREVIEW_PARTICLE_INTERVAL_TICKS = 3;
     public static final int PREVIEW_PARTICLE_STRIDE = 5;
     public static final int PUTTER_PREVIEW_PARTICLE_STRIDE = 8;
+    // Preview particles are resampled along the whole predicted polyline. These caps keep the
+    // guide continuous and readable without rebuilding the old particle cloud.
+    public static final int PREVIEW_GUIDE_MAX_PARTICLES = 34;
+    public static final int PUTTER_GUIDE_MAX_PARTICLES = 30;
+    public static final double PREVIEW_GUIDE_MIN_SPACING = 1.10;
+    public static final double PUTTER_GUIDE_MIN_SPACING = 0.75;
 
     public static final int BALL_TRAIL_INTERVAL_TICKS = 6;
     public static final int LOW_SPEED_BALL_TRAIL_INTERVAL_TICKS = 12;

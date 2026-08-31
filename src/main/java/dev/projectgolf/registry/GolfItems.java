@@ -1,13 +1,16 @@
 package dev.projectgolf.registry;
 
 import dev.projectgolf.ProjectGolf;
+import net.minecraft.core.component.DataComponents;
 import dev.projectgolf.golf.ClubType;
 import dev.projectgolf.item.GolfBallItem;
+import dev.projectgolf.item.GolfBagItem;
 import dev.projectgolf.item.GolfClubItem;
 import dev.projectgolf.item.GolfDebugWandItem;
 import dev.projectgolf.item.GoldenSpotterItem;
 import dev.projectgolf.item.CourseDesignerItem;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -18,7 +21,8 @@ public final class GolfItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ProjectGolf.MOD_ID);
 
     public static final DeferredItem<GolfBallItem> GOLF_BALL =
-            ITEMS.registerItem("golf_ball", GolfBallItem::new, new Item.Properties());
+            ITEMS.registerItem("golf_ball", GolfBallItem::new,
+                    new Item.Properties().component(DataComponents.BASE_COLOR, DyeColor.WHITE));
 
     public static final DeferredItem<GolfClubItem> DRIVER =
             ITEMS.registerItem("driver", p -> new GolfClubItem(ClubType.DRIVER, p), new Item.Properties());
@@ -33,6 +37,9 @@ public final class GolfItems {
 
     public static final DeferredItem<GoldenSpotterItem> GOLDEN_SPOTTER =
             ITEMS.registerItem("golden_spotter", GoldenSpotterItem::new, new Item.Properties());
+
+    public static final DeferredItem<GolfBagItem> GOLF_BAG =
+            ITEMS.registerItem("golf_bag", GolfBagItem::new, new Item.Properties());
 
     public static final DeferredItem<CourseDesignerItem> COURSE_DESIGNER =
             ITEMS.registerItem("course_designer", CourseDesignerItem::new, new Item.Properties());

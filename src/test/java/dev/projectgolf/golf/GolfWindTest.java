@@ -33,6 +33,17 @@ final class GolfWindTest {
     }
 
     @Test
+    void relativeWindArrowRotatesWithPlayerYaw() {
+        var southFacing = GolfWind.relativeToYaw(new net.minecraft.world.phys.Vec3(0, 0, 1), 0.0f);
+        assertEquals(0.0, southFacing.right(), 1.0e-9);
+        assertEquals(1.0, southFacing.forward(), 1.0e-9);
+
+        var westFacing = GolfWind.relativeToYaw(new net.minecraft.world.phys.Vec3(0, 0, 1), 90.0f);
+        assertEquals(1.0, westFacing.right(), 1.0e-9);
+        assertEquals(0.0, westFacing.forward(), 1.0e-9);
+    }
+
+    @Test
     void compassMatchesMinecraftCardinals() {
         assertEquals("E", GolfWind.compass(new net.minecraft.world.phys.Vec3(1, 0, 0)));
         assertEquals("W", GolfWind.compass(new net.minecraft.world.phys.Vec3(-1, 0, 0)));

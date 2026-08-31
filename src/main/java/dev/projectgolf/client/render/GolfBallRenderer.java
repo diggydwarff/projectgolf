@@ -11,6 +11,11 @@ import net.minecraft.util.Mth;
 /**
  * Keeps the physical ball small while making its rendered silhouette progressively easier to
  * follow at driving distance. The multiplier only affects rendering, never hitboxes or physics.
+ *
+ * The previous screen-space sprite-spin experiment has intentionally been removed. A billboarded
+ * 2-D item rotating toward the camera does not read as a sphere rolling and looked especially
+ * wrong on slow putts. We keep the stable vanilla presentation until a true 3-D ball renderer is
+ * worth adding.
  */
 public final class GolfBallRenderer extends ThrownItemRenderer<GolfBallEntity> {
     public GolfBallRenderer(EntityRendererProvider.Context context) {

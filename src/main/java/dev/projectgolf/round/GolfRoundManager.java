@@ -4,6 +4,9 @@ import dev.projectgolf.course.GolfCourseSavedData;
 import dev.projectgolf.course.HoleDefinition;
 import dev.projectgolf.entity.GolfBallEntity;
 import dev.projectgolf.golf.GolfTuning;
+import dev.projectgolf.item.GolfBallItem;
+import dev.projectgolf.registry.GolfBlocks;
+import dev.projectgolf.registry.GolfEntities;
 import dev.projectgolf.network.RoundStatePayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -13,7 +16,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -33,6 +38,7 @@ public final class GolfRoundManager {
     private static final String TOTAL_STROKES = "TotalStrokes";
     private static final String TOTAL_PAR = "TotalPar";
     private static final String ACTIVE_BALL = "ActiveBall";
+    private static final String PREFERRED_BALL_COLOR = "PreferredBallColor";
 
     public static Optional<GolfBallEntity> findOwnedBall(ServerPlayer player) {
         return player.serverLevel()
@@ -80,6 +86,16 @@ public final class GolfRoundManager {
     public static boolean isActiveBall(ServerPlayer player, UUID ballId) {
         CompoundTag golf = golfTag(player);
         return golf.hasUUID(ACTIVE_BALL) && golf.getUUID(ACTIVE_BALL).equals(ballId);
+    }
+
+    public static void setPreferredBallColor(ServerPlayer player, DyeColor color) {
+        golfTag(player).putInt(PREFERRED_BALL_COLOR, color.getId());
+    }
+
+    public static DyeColor preferredBallColor(ServerPlayer player) {
+        CompoundTag golf = golfTag(player);
+        if (!golf.contains(PREFERRED_BALL_COLOR, Tag.TAG_INT)) return DyeColor.WHITE;
+        return DyeColor.byId(golf.getInt(PREFERRED_BALL_COLOR));
     }
 
     public static boolean canSwing(ServerPlayer player) {
@@ -139,8 +155,9 @@ public final class GolfRoundManager {
         if (next != null) {
             golf.putInt(CURRENT_HOLE, next.number());
             resetHole(player);
+            spawnOpeningBallOnTee(player, next);
             player.sendSystemMessage(Component.literal(
-                    "Next: hole " + next.number() + " (par " + next.par() + ")."));
+                    "Next: hole " + next.number() + " (par " + next.par() + "). Opening ball placed on the tee."));
             syncRound(player);
             return;
         }
@@ -170,9 +187,54 @@ public final class GolfRoundManager {
         golf.putInt(TOTAL_STROKES, 0);
         golf.putInt(TOTAL_PAR, 0);
         resetHole(player);
+        HoleDefinition openingHole = currentHoleDefinition(player).orElse(null);
+        if (openingHole != null) spawnOpeningBallOnTee(player, openingHole);
         syncRound(player);
     }
 
+    /**
+     * Re-establish the legal opening lie for the current hole. This is intentionally strict only
+     * before the first stroke; once the hole is underway Project Golf goes back to play-it-where-it-lies.
+     */
+    public static boolean resetOpeningBallToTee(ServerPlayer player) {
+        HoleDefinition hole = currentHoleDefinition(player).orElse(null);
+        if (hole == null) return false;
+        removeActiveBall(player);
+        return spawnOpeningBallOnTee(player, hole);
+    }
+
+    private static boolean spawnOpeningBallOnTee(ServerPlayer player, HoleDefinition hole) {
+        if (hole.tee() == null) return false;
+        String playerDimension = player.level().dimension().location().toString();
+        if (!hole.dimension().equals(playerDimension)) {
+            player.sendSystemMessage(Component.literal(
+                    "Hole " + hole.number() + " tee is in " + hole.dimension() + "; opening ball was not spawned."));
+            return false;
+        }
+
+        ServerLevel level = player.serverLevel();
+        BlockPos tee = hole.tee();
+        if (!level.getBlockState(tee).is(GolfBlocks.TEE_MARKER.get())) {
+            player.sendSystemMessage(Component.literal(
+                    "Hole " + hole.number() + " Tee Marker is missing at " + tee + "."));
+            return false;
+        }
+
+        GolfBallEntity ball = GolfEntities.GOLF_BALL.get().create(level);
+        if (ball == null) return false;
+        Vec3 lie = new Vec3(tee.getX() + 0.5, tee.getY() + 1.14, tee.getZ() + 0.5);
+        ball.setPos(lie.x, lie.y, lie.z);
+        ball.setItem(GolfBallItem.coloredStack(preferredBallColor(player)));
+        ball.setGolfOwner(player.getUUID());
+        ball.setLastSafePosition(lie);
+        if (!level.addFreshEntity(ball)) return false;
+        setActiveBall(player, ball);
+        return true;
+    }
+
+    public static boolean hasTakenStroke(ServerPlayer player) {
+        return golfTag(player).getInt(STROKES) > 0;
+    }
 
     public static boolean hasActiveRound(ServerPlayer player) {
         CompoundTag golf = golfTag(player);

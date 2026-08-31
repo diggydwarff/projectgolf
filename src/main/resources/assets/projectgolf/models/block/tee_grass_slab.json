@@ -1,7 +1,7 @@
 {
   "parent": "projectgolf:block/tinted_slab_bottom",
   "textures": {
-    "all": "projectgolf:block/tee_grass",
-    "particle": "projectgolf:block/tee_grass"
+    "all": "minecraft:block/grass_block_top",
+    "particle": "minecraft:block/grass_block_top"
   }
 }

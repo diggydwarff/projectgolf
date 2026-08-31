@@ -45,6 +45,13 @@ final class GolfPhysicsTest {
     }
 
     @Test
+    void greenRollingResistanceKillsTheLowSpeedIceTail() {
+        Vec3 tiny = new Vec3(GolfTuning.GREEN_ROLLING_RESISTANCE * 0.75, 0.0, 0.0);
+        Vec3 result = GolfPhysics.grounded(tiny, GolfSurface.GREEN, null);
+        assertEquals(0.0, result.x, EPS);
+    }
+
+    @Test
     void downhillSlopeAddsVelocityInItsDirection() {
         Vec3 flat = GolfPhysics.grounded(new Vec3(0.2, 0.0, 0.0), GolfSurface.GREEN, null);
         Vec3 east = GolfPhysics.grounded(new Vec3(0.2, 0.0, 0.0), GolfSurface.GREEN, Direction.EAST);

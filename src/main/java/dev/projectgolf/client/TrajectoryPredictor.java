@@ -9,11 +9,12 @@ import dev.projectgolf.golf.GolfSurface;
 import dev.projectgolf.golf.GolfTuning;
 import dev.projectgolf.golf.GolfWind;
 import dev.projectgolf.golf.SwingMath;
-import dev.projectgolf.registry.GolfBlocks;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -76,7 +77,7 @@ public final class TrajectoryPredictor {
                 points.add(pos.add(0.0, 0.075, 0.0));
             }
 
-            SurfaceSample here = findSurface(player, pos.x, pos.z, surfaceY);
+            SurfaceSample here = findSurface(player, pos.x, pos.z, surfaceY, false);
             GolfSurface surface = here == null ? ball.currentLie() : GolfSurface.from(here.state());
             Direction downhill = null;
             double rise = 0.0;
@@ -102,17 +103,19 @@ public final class TrajectoryPredictor {
             double moveZ = velocity.z * GolfTuning.PREVIEW_STEP_TICKS;
             int substeps = Math.max(1, (int) Math.ceil(Math.sqrt(moveX * moveX + moveZ * moveZ) / 0.20));
             boolean blocked = false;
+            SurfaceSample currentSample = here;
             for (int step = 0; step < substeps; step++) {
                 double nextX = pos.x + moveX / substeps;
                 double nextZ = pos.z + moveZ / substeps;
-                SurfaceSample next = findSurface(player, nextX, nextZ, surfaceY);
+                boolean sourceBottomSlab = currentSample != null && isBottomSlab(currentSample.state());
+                SurfaceSample next = findSurface(player, nextX, nextZ, surfaceY, sourceBottomSlab);
                 if (next == null) {
                     blocked = true;
                     break;
                 }
 
                 double deltaY = next.surfaceY() - surfaceY;
-                double maxRise = next.state().getBlock() == GolfBlocks.GRASS_SLAB.get()
+                double maxRise = (sourceBottomSlab || isBottomSlab(next.state()))
                         ? 0.55
                         : GolfTuning.BALL_MAX_UP_STEP + 0.055;
                 if (deltaY > maxRise || deltaY < -0.55) {
@@ -122,6 +125,7 @@ public final class TrajectoryPredictor {
 
                 surfaceY = next.surfaceY();
                 pos = new Vec3(nextX, surfaceY, nextZ);
+                currentSample = next;
             }
             if (blocked) break;
         }
@@ -133,7 +137,7 @@ public final class TrajectoryPredictor {
         return points;
     }
 
-    private static SurfaceSample findSurface(LocalPlayer player, double x, double z, double expectedY) {
+    private static SurfaceSample findSurface(LocalPlayer player, double x, double z, double expectedY, boolean sourceBottomSlab) {
         int centerY = (int) Math.floor(expectedY);
         SurfaceSample best = null;
         double bestDistance = Double.MAX_VALUE;
@@ -156,7 +160,7 @@ public final class TrajectoryPredictor {
                 }
                 double top = blockPos.getY() + box.maxY;
                 double distance = Math.abs(top - expectedY);
-                double maxRise = state.getBlock() == GolfBlocks.GRASS_SLAB.get()
+                double maxRise = (sourceBottomSlab || isBottomSlab(state))
                         ? 0.56
                         : GolfTuning.BALL_MAX_UP_STEP + 0.06;
                 if (top <= expectedY + maxRise
@@ -209,6 +213,12 @@ public final class TrajectoryPredictor {
     }
 
     public record MarkerPlacement(Vec3 base, double height, boolean occluded) {}
+
+    private static boolean isBottomSlab(BlockState state) {
+        return state.getBlock() instanceof SlabBlock
+                && state.hasProperty(SlabBlock.TYPE)
+                && state.getValue(SlabBlock.TYPE) == SlabType.BOTTOM;
+    }
 
     private record SurfaceSample(BlockState state, double surfaceY) {}
 }

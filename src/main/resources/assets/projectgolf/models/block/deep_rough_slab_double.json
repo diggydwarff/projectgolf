@@ -1,7 +1,7 @@
 {
-  "parent": "projectgolf:block/deep_rough",
+  "parent": "minecraft:block/grass_block_top",
   "textures": {
-    "all": "projectgolf:block/deep_rough",
-    "particle": "projectgolf:block/deep_rough"
+    "all": "minecraft:block/grass_block_top",
+    "particle": "minecraft:block/grass_block_top"
   }
 }

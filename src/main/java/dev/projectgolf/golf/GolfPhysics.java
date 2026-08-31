@@ -63,6 +63,9 @@ public final class GolfPhysics {
                 0.0,
                 velocity.z * surface.rollingRetention()
         );
+        if (surface == GolfSurface.GREEN) {
+            result = applyHorizontalResistance(result, GolfTuning.GREEN_ROLLING_RESISTANCE);
+        }
         if (downhill != null && rise > 0.0) {
             double acceleration = slopeAccelerationMagnitude(rise);
             result = result.add(
@@ -72,6 +75,14 @@ public final class GolfPhysics {
             );
         }
         return clampSpeed(result);
+    }
+
+    private static Vec3 applyHorizontalResistance(Vec3 velocity, double resistance) {
+        double speed = horizontalSpeed(velocity);
+        if (speed <= 0.0 || resistance <= 0.0) return velocity;
+        if (speed <= resistance) return new Vec3(0.0, velocity.y, 0.0);
+        double scale = (speed - resistance) / speed;
+        return new Vec3(velocity.x * scale, velocity.y, velocity.z * scale);
     }
 
     public static double slopeAccelerationMagnitude(double rise) {

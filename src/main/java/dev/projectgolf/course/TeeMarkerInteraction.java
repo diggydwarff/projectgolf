@@ -55,8 +55,14 @@ public final class TeeMarkerInteraction {
         }
 
         if (GolfRoundManager.isPlaying(player, link.courseName(), hole.number())) {
-            player.sendSystemMessage(Component.literal(
-                    link.courseName() + " hole " + hole.number() + " is already active (par " + hole.par() + ")."));
+            if (!GolfRoundManager.hasTakenStroke(player)) {
+                GolfRoundManager.resetOpeningBallToTee(player);
+                player.sendSystemMessage(Component.literal(
+                        link.courseName() + " hole " + hole.number() + " is active; opening ball reset to this tee."));
+            } else {
+                player.sendSystemMessage(Component.literal(
+                        link.courseName() + " hole " + hole.number() + " is already underway (par " + hole.par() + ")."));
+            }
             return;
         }
 

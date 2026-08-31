@@ -1,7 +1,7 @@
 {
-  "parent": "projectgolf:block/fairway",
+  "parent": "minecraft:block/grass_block_top",
   "textures": {
-    "all": "projectgolf:block/fairway",
-    "particle": "projectgolf:block/fairway"
+    "all": "minecraft:block/grass_block_top",
+    "particle": "minecraft:block/grass_block_top"
   }
 }

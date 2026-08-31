@@ -52,7 +52,19 @@ public final class GolfWind {
     public static String hudText(Level level) {
         WindSample wind = sample(level);
         int strength = (int) Math.round(wind.strength() * 10.0);
-        return "Wind -> " + compass(wind.direction()) + " " + strength + "/10";
+        return "Wind " + compass(wind.direction()) + " " + strength + "/10";
+    }
+
+    /** Wind components relative to the direction the player/camera is facing. */
+    public static RelativeWind relativeToYaw(Vec3 direction, float yawDegrees) {
+        Vec3 flat = new Vec3(direction.x, 0.0, direction.z);
+        if (flat.horizontalDistanceSqr() < 1.0e-12) return new RelativeWind(0.0, 0.0);
+        flat = flat.normalize();
+        double yaw = Math.toRadians(yawDegrees);
+        // Minecraft yaw 0 faces +Z. Positive localRight is screen-right; positive localForward is ahead.
+        Vec3 forward = new Vec3(-Math.sin(yaw), 0.0, Math.cos(yaw));
+        Vec3 right = new Vec3(Math.cos(yaw), 0.0, Math.sin(yaw));
+        return new RelativeWind(flat.dot(right), flat.dot(forward));
     }
 
     /** Compass direction the air is moving toward, matching the ball deflection and wisps. */
@@ -65,6 +77,8 @@ public final class GolfWind {
         int index = (int) Math.floor((compassDegrees + 22.5) / 45.0) & 7;
         return names[index];
     }
+
+    public record RelativeWind(double right, double forward) {}
 
     public record WindSample(Vec3 direction, double strength) {
         public WindSample {

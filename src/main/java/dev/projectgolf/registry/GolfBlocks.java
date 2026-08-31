@@ -82,10 +82,10 @@ public final class GolfBlocks {
 
     public static final DeferredBlock<Block> TEE_MARKER =
             BLOCKS.registerSimpleBlock("tee_marker",
-                    BlockBehaviour.Properties.of().strength(0.8f).sound(net.minecraft.world.level.block.SoundType.STONE));
+                    BlockBehaviour.Properties.of().strength(0.8f).sound(net.minecraft.world.level.block.SoundType.GRASS));
 
     /** Development-only visible stand-in for an out-of-bounds course region. */
     public static final DeferredBlock<Block> DEBUG_OOB =
             BLOCKS.registerSimpleBlock("debug_oob",
-                    BlockBehaviour.Properties.of().strength(0.8f).sound(net.minecraft.world.level.block.SoundType.STONE));
+                    BlockBehaviour.Properties.of().strength(0.8f).sound(net.minecraft.world.level.block.SoundType.GRASS));
 }

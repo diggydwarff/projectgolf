@@ -1,7 +1,7 @@
 {
-  "parent": "projectgolf:block/putting_green",
+  "parent": "minecraft:block/grass_block_top",
   "textures": {
-    "all": "projectgolf:block/putting_green",
-    "particle": "projectgolf:block/putting_green"
+    "all": "minecraft:block/grass_block_top",
+    "particle": "minecraft:block/grass_block_top"
   }
 }

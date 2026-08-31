@@ -4,6 +4,8 @@ import dev.projectgolf.ProjectGolf;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.DyeColor;
+import dev.projectgolf.item.GolfBallItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -21,7 +23,11 @@ public final class GolfCreativeTabs {
                     .icon(() -> GolfItems.GOLF_BALL.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
                         // Core play kit first.
-                        output.accept(GolfItems.GOLF_BALL.get());
+                        // One item, all 16 vanilla dye variants. White remains first/default.
+                        for (DyeColor color : DyeColor.values()) {
+                            output.accept(GolfBallItem.coloredStack(color));
+                        }
+                        output.accept(GolfItems.GOLF_BAG.get());
                         output.accept(GolfItems.DRIVER.get());
                         output.accept(GolfItems.WOOD.get());
                         output.accept(GolfItems.IRON.get());
