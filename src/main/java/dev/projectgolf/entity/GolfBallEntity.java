@@ -76,6 +76,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
     private @Nullable ClubType shotClub;
     private float shotPower;
     private float shotAccuracy;
+    private boolean shotStartedOnDrivingRangeTee;
     private Vec3 previousShotPosition = Vec3.ZERO;
 
     public GolfBallEntity(EntityType<? extends GolfBallEntity> type, Level level) {
@@ -171,7 +172,8 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         shotPower = power;
         shotAccuracy = accuracy;
 
-        GolfRoundManager.recordStroke(player);
+        if (shotStartedOnDrivingRangeTee) GolfRoundManager.recordPracticeSwing(player);
+        else GolfRoundManager.recordStroke(player);
         if (level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             GolfVisualEffects.clubImpact(serverLevel, position(), club);
             if (Math.abs(accuracy) <= GolfTuning.PERFECT_ACCURACY_WINDOW) {
@@ -443,6 +445,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         landingMarkerTicks = 0;
         landingMarkerTotalTicks = 0;
         previousShotPosition = position();
+        shotStartedOnDrivingRangeTee = isDrivingRangeTeeLie();
     }
 
     private void cancelShotTelemetry() {
@@ -455,6 +458,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         landingMarkerTicks = 0;
         landingMarkerTotalTicks = 0;
         previousShotPosition = position();
+        shotStartedOnDrivingRangeTee = false;
     }
 
     private void updateShotTelemetry() {
@@ -487,10 +491,21 @@ public class GolfBallEntity extends ThrowableItemProjectile {
             GolfVisualEffects.landingMarker(owner, position(), 1.0f);
             // The immediate marker counts as the first pulse; avoid re-emitting again one tick later.
             landingMarkerTicks = Math.max(0, markerDuration - 1);
-            PacketDistributor.sendToPlayer(owner, ShotSummaryPayload.forStoppedShot(
-                    shotClub, shotPower, shotAccuracy, shotDistance, shotCarryDistance, roll,
-                    currentLie(), GolfRoundManager.strokes(owner), false));
+            PacketDistributor.sendToPlayer(owner, shotStartedOnDrivingRangeTee
+                    ? ShotSummaryPayload.forDrivingRangeShot(
+                            shotClub, shotPower, shotAccuracy, shotDistance, shotCarryDistance, roll, currentLie())
+                    : ShotSummaryPayload.forStoppedShot(
+                            shotClub, shotPower, shotAccuracy, shotDistance, shotCarryDistance, roll,
+                            currentLie(), GolfRoundManager.strokes(owner), false));
         }
+    }
+
+    private boolean isDrivingRangeTeeLie() {
+        // Balls snapped to a tee sit at blockY + 1.14. Sampling slightly below their center lands
+        // inside the supporting full block and stays robust if another mod nudges the entity a few
+        // hundredths of a block before launch.
+        BlockPos support = BlockPos.containing(getX(), getY() - 0.20, getZ());
+        return level().getBlockState(support).is(GolfBlocks.DRIVING_RANGE_TEE.get());
     }
 
     private boolean isPuttingGreenLayerAt(Vec3 position) {

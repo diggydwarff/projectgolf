@@ -14,6 +14,7 @@ public final class ProjectGolfClient {
         ClientBridge.installHoleViewPresenter(ClientHoleView::show);
         ClientBridge.installRoundStatePresenter(ClientRoundState::accept);
         ClientBridge.installScorecardPresenter(ClientScorecardScreen::open);
+        ClientBridge.installCourseUiPresenter(CourseUiScreen::open);
         modBus.addListener(ClientEvents::registerRenderers);
         modBus.addListener(ClientEvents::registerHud);
         modBus.addListener(ClientEvents::registerKeyMappings);

@@ -3,8 +3,10 @@ package dev.projectgolf.item;
 import dev.projectgolf.entity.GolfBallEntity;
 import dev.projectgolf.registry.GolfEntities;
 import dev.projectgolf.registry.GolfItems;
+import dev.projectgolf.registry.GolfBlocks;
 import dev.projectgolf.round.GolfRoundManager;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -81,10 +83,18 @@ public class GolfBallItem extends Item {
 
         ServerPlayer owner = context.getPlayer() instanceof ServerPlayer player ? player : null;
         ItemStack placedStack = context.getItemInHand().copyWithCount(1);
+        BlockPos clickedPos = context.getClickedPos();
+        boolean drivingRangeTee = level.getBlockState(clickedPos).is(GolfBlocks.DRIVING_RANGE_TEE.get());
         if (owner != null) {
             // Whatever color the player intentionally places becomes their preferred competitive
             // ball color for subsequent tees as well.
             GolfRoundManager.setPreferredBallColor(owner, color(placedStack));
+        }
+
+        if (owner != null && drivingRangeTee && GolfRoundManager.hasActiveRound(owner)) {
+            owner.sendSystemMessage(Component.literal(
+                    "Leave the active course before using a Driving Range Tee."));
+            return InteractionResult.CONSUME;
         }
 
         if (owner != null && GolfRoundManager.hasActiveRound(owner) && !GolfRoundManager.hasTakenStroke(owner)) {
@@ -97,8 +107,12 @@ public class GolfBallItem extends Item {
         GolfBallEntity ball = GolfEntities.GOLF_BALL.get().create(level);
         if (ball == null) return InteractionResult.FAIL;
 
-        Vec3 click = context.getClickLocation();
-        ball.setPos(click.x, click.y + 0.14, click.z);
+        boolean teeBlock = level.getBlockState(clickedPos).is(GolfBlocks.TEE_MARKER.get())
+                || drivingRangeTee;
+        Vec3 lie = teeBlock
+                ? new Vec3(clickedPos.getX() + 0.5, clickedPos.getY() + 1.14, clickedPos.getZ() + 0.5)
+                : context.getClickLocation().add(0.0, 0.14, 0.0);
+        ball.setPos(lie.x, lie.y, lie.z);
         ball.setItem(placedStack);
 
         if (owner != null) {

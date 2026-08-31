@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.projectgolf.course.CourseBuilderManager;
 import dev.projectgolf.course.CourseDefinition;
+import dev.projectgolf.course.CourseUiService;
 import dev.projectgolf.course.GolfCourseSavedData;
 import dev.projectgolf.course.HoleDefinition;
 import dev.projectgolf.round.GolfRoundManager;
@@ -55,9 +56,9 @@ public final class GolfCourseCommand {
                 .then(Commands.literal("status")
                         .executes(ctx -> status(ctx.getSource())))
                 .then(Commands.literal("courses")
-                        .executes(ctx -> list(ctx.getSource())))
+                        .executes(ctx -> openCourses(ctx.getSource())))
                 .then(Commands.literal("history")
-                        .executes(ctx -> history(ctx.getSource())))
+                        .executes(ctx -> openHistory(ctx.getSource())))
                 .then(Commands.literal("leaderboard")
                         .then(Commands.argument("course", StringArgumentType.string())
                                 .executes(ctx -> leaderboard(
@@ -83,6 +84,8 @@ public final class GolfCourseCommand {
                                                 true)))))
                 .then(Commands.literal("course")
                         .requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("gui")
+                                .executes(ctx -> openBuilder(ctx.getSource())))
                         .then(Commands.literal("create")
                                 .then(Commands.argument("name", StringArgumentType.string())
                                         .executes(ctx -> create(
@@ -397,6 +400,21 @@ public final class GolfCourseCommand {
 
         PacketDistributor.sendToPlayer(player, new HoleViewPayload(
                 course.name(), hole.number(), hole.par(), hole.tee(), hole.cup(), hole.guidePoints(), flyover));
+        return 1;
+    }
+
+    private static int openCourses(CommandSourceStack source) throws CommandSyntaxException {
+        CourseUiService.openBrowser(source.getPlayerOrException());
+        return 1;
+    }
+
+    private static int openHistory(CommandSourceStack source) throws CommandSyntaxException {
+        CourseUiService.openHistory(source.getPlayerOrException());
+        return 1;
+    }
+
+    private static int openBuilder(CommandSourceStack source) throws CommandSyntaxException {
+        CourseUiService.openBuilder(source.getPlayerOrException());
         return 1;
     }
 

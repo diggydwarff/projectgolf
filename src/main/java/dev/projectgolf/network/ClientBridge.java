@@ -29,10 +29,16 @@ public final class ClientBridge {
         void show(CompoundTag data);
     }
 
+    @FunctionalInterface
+    public interface CourseUiPresenter {
+        void show(CompoundTag data);
+    }
+
     private static ShotSummaryPresenter shotSummaryPresenter = (title, message) -> {};
     private static HoleViewPresenter holeViewPresenter = payload -> {};
     private static RoundStatePresenter roundStatePresenter = payload -> {};
     private static ScorecardPresenter scorecardPresenter = data -> {};
+    private static CourseUiPresenter courseUiPresenter = data -> {};
 
     private ClientBridge() {}
 
@@ -66,5 +72,13 @@ public final class ClientBridge {
 
     public static void showScorecard(CompoundTag data) {
         scorecardPresenter.show(data);
+    }
+
+    public static void installCourseUiPresenter(CourseUiPresenter presenter) {
+        courseUiPresenter = presenter == null ? data -> {} : presenter;
+    }
+
+    public static void showCourseUi(CompoundTag data) {
+        courseUiPresenter.show(data);
     }
 }

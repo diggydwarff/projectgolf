@@ -18,6 +18,7 @@ public final class GolfHud {
         // Stop here while one is open so normal golf HUD elements do not sit on top of it.
         ClientScorecardScreen.renderOverlay(graphics);
         if (ClientScorecardScreen.active()) return;
+
         ClientHoleView.renderHud(graphics);
         if (ClientHoleView.active()) return;
         if (mc.player == null) return;

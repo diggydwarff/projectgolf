@@ -127,6 +127,11 @@ public final class GolfRoundManager {
         syncRound(player);
     }
 
+    /** A driving-range swing uses the normal anti-spam cooldown but never modifies course scoring. */
+    public static void recordPracticeSwing(ServerPlayer player) {
+        golfTag(player).putLong(LAST_SWING_TICK, player.level().getGameTime());
+    }
+
     public static void addPenalty(ServerPlayer player, int strokes, String reason) {
         int applied = Math.max(0, strokes);
         if (applied == 0) return;

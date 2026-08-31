@@ -101,6 +101,10 @@ public final class GolfBlocks {
             BLOCKS.registerSimpleBlock("tee_marker",
                     BlockBehaviour.Properties.of().strength(0.8f).sound(net.minecraft.world.level.block.SoundType.GRASS));
 
+    /** Practice tee: a normal tee lie that is intentionally not linked to a course/cup. */
+    public static final DeferredBlock<GolfTurfBlock> DRIVING_RANGE_TEE =
+            BLOCKS.register("driving_range_tee", () -> new GolfTurfBlock(GolfSurface.TEE, turfProperties()));
+
     /** Development-only visible stand-in for an out-of-bounds course region. */
     public static final DeferredBlock<Block> DEBUG_OOB =
             BLOCKS.registerSimpleBlock("debug_oob",

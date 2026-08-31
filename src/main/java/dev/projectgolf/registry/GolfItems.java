@@ -77,6 +77,7 @@ public final class GolfItems {
     public static final DeferredItem<BlockItem> BUNKER_SAND_SLAB = blockItem("bunker_sand_slab", GolfBlocks.BUNKER_SAND_SLAB);
     public static final DeferredItem<BlockItem> GOLF_CUP = blockItem("golf_cup", GolfBlocks.GOLF_CUP);
     public static final DeferredItem<BlockItem> TEE_MARKER = blockItem("tee_marker", GolfBlocks.TEE_MARKER);
+    public static final DeferredItem<BlockItem> DRIVING_RANGE_TEE = blockItem("driving_range_tee", GolfBlocks.DRIVING_RANGE_TEE);
     public static final DeferredItem<BlockItem> DEBUG_OOB = blockItem("debug_oob", GolfBlocks.DEBUG_OOB);
 
     private static <T extends net.minecraft.world.level.block.Block> DeferredItem<BlockItem> blockItem(

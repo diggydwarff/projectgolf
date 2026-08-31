@@ -39,7 +39,7 @@ public final class ClientEvents {
 
     public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
         event.register((state, world, pos, tintIndex) -> tintFor(state.getBlock(), world, pos),
-                GolfBlocks.GRASS_SLAB.get(), GolfBlocks.TEE_MARKER.get(),
+                GolfBlocks.GRASS_SLAB.get(), GolfBlocks.TEE_MARKER.get(), GolfBlocks.DRIVING_RANGE_TEE.get(),
                 GolfBlocks.TEE_GRASS.get(), GolfBlocks.TEE_GRASS_SLAB.get(),
                 GolfBlocks.FAIRWAY.get(), GolfBlocks.FAIRWAY_SLAB.get(),
                 GolfBlocks.FRINGE.get(), GolfBlocks.FRINGE_SLAB.get(),
@@ -64,7 +64,7 @@ public final class ClientEvents {
                 GolfItems.GOLF_BALL.get());
 
         event.register((stack, tintIndex) -> tintFor(itemTintBlock(stack.getItem()), null, null),
-                GolfItems.GRASS_SLAB.get(), GolfItems.TEE_MARKER.get(),
+                GolfItems.GRASS_SLAB.get(), GolfItems.TEE_MARKER.get(), GolfItems.DRIVING_RANGE_TEE.get(),
                 GolfItems.TEE_GRASS.get(), GolfItems.TEE_GRASS_SLAB.get(),
                 GolfItems.FAIRWAY.get(), GolfItems.FAIRWAY_SLAB.get(),
                 GolfItems.FRINGE.get(), GolfItems.FRINGE_SLAB.get(),
@@ -81,7 +81,6 @@ public final class ClientEvents {
         ClientHoleView.tick();
         ClientSpotter.tick();
         ClientWindEffects.tick();
-
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
         if (mc.player == null) ClientRoundState.clear();
         // The scorecard is a HUD overlay rather than a Screen so it cannot enter Minecraft's
@@ -122,7 +121,25 @@ public final class ClientEvents {
         }
     }
 
+    public static void onCourseUiMouse(InputEvent.MouseButton.Pre event) {
+        if (CourseUiScreen.handleMouseButton(event.getButton(), event.getAction())) {
+            event.setCanceled(true);
+        }
+    }
+
+    public static void onCourseUiKey(InputEvent.Key event) {
+        if (CourseUiScreen.active()) {
+            CourseUiScreen.handleKey(event.getKey(), event.getScanCode(), event.getAction(), event.getModifiers());
+            // InputEvent.Key is intentionally not cancellable. Release vanilla key mappings after
+            // routing it to the overlay so typing metadata cannot also walk/open inventory/use items.
+            net.minecraft.client.KeyMapping.releaseAll();
+        }
+    }
+
     public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
+        // CourseUiScreen is a normal Screen again, so vanilla routes scrolling to it directly.
+        // Only treat wheel input as shot planning while no Project Golf course menu is open.
+        if (CourseUiScreen.active()) return;
         if (ClientSwingController.adjustPlannedPower(event.getScrollDeltaY())) {
             // Shift+wheel belongs to Project Golf while planning a shot; do not also change hotbar slots.
             event.setCanceled(true);
@@ -132,6 +149,7 @@ public final class ClientEvents {
     private static net.minecraft.world.level.block.Block itemTintBlock(net.minecraft.world.item.Item item) {
         if (item == GolfItems.GRASS_SLAB.get()) return GolfBlocks.GRASS_SLAB.get();
         if (item == GolfItems.TEE_MARKER.get()) return GolfBlocks.TEE_MARKER.get();
+        if (item == GolfItems.DRIVING_RANGE_TEE.get()) return GolfBlocks.DRIVING_RANGE_TEE.get();
         if (item == GolfItems.TEE_GRASS.get()) return GolfBlocks.TEE_GRASS.get();
         if (item == GolfItems.TEE_GRASS_SLAB.get()) return GolfBlocks.TEE_GRASS_SLAB.get();
         if (item == GolfItems.FAIRWAY.get()) return GolfBlocks.FAIRWAY.get();

@@ -23,6 +23,7 @@
   "block.projectgolf.rough_precision_slope": "Rough Precision Slope",
   "block.projectgolf.golf_cup": "Golf Cup",
   "block.projectgolf.tee_marker": "Tee Marker",
+  "block.projectgolf.driving_range_tee": "Driving Range Tee",
   "block.projectgolf.debug_oob": "Optional OOB Marker (Debug)",
   "item.projectgolf.course_designer": "Course Designer",
   "block.projectgolf.putting_green_layer": "Putting Green Layer",

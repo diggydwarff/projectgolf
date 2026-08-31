@@ -36,6 +36,26 @@ public record ShotSummaryPayload(String title, String message) implements Custom
         ClientBridge.showShotSummary(payload.title(), payload.message());
     }
 
+    public static ShotSummaryPayload forDrivingRangeShot(
+            @Nullable ClubType club,
+            float power,
+            float accuracy,
+            double total,
+            double carry,
+            double roll,
+            GolfSurface finalLie
+    ) {
+        String clubName = club == null ? "Golf Shot" : club.displayName();
+        String accuracyLabel = club == null ? "" : SwingMath.accuracyLabel(accuracy);
+        String title = "RANGE - " + clubName
+                + (accuracyLabel.isBlank() ? "" : " - " + accuracyLabel)
+                + " - " + Math.round(power * 100.0f) + "%";
+        String message = String.format(Locale.ROOT,
+                "Total %.1f blocks | Carry %.1f | Roll %.1f | %s",
+                total, carry, roll, finalLie.displayName());
+        return new ShotSummaryPayload(title, message);
+    }
+
     public static ShotSummaryPayload forStoppedShot(
             @Nullable ClubType club,
             float power,

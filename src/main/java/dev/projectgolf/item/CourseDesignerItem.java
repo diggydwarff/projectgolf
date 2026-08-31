@@ -1,6 +1,7 @@
 package dev.projectgolf.item;
 
 import dev.projectgolf.course.CourseBuilderManager;
+import dev.projectgolf.course.CourseUiService;
 import dev.projectgolf.course.CourseDefinition;
 import dev.projectgolf.course.GolfCourseSavedData;
 import dev.projectgolf.course.HoleDefinition;
@@ -9,6 +10,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,6 +28,16 @@ public final class CourseDesignerItem extends Item {
         super(properties.stacksTo(1));
     }
 
+
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+            CourseUiService.openBuilder(serverPlayer);
+        }
+        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext context) {
         if (!(context.getPlayer() instanceof ServerPlayer player)) {
@@ -31,7 +47,7 @@ public final class CourseDesignerItem extends Item {
         var selection = CourseBuilderManager.selection(player);
         if (selection.isEmpty()) {
             player.sendSystemMessage(Component.literal(
-                    "No course edit selected. Use /golf course edit <course> <hole> <par>."));
+                    "No course edit selected. Right-click the Course Designer in the air to open Course Design Studio."));
             return InteractionResult.SUCCESS;
         }
 

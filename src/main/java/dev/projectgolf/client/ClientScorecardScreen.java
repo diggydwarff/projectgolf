@@ -26,6 +26,9 @@ public final class ClientScorecardScreen {
      * too; players do not need to obtain a new card after updating.
      */
     public static void open(CompoundTag tag) {
+        // History browser is a real Screen; close it before showing the final-layer scorecard HUD.
+        // Otherwise ClientEvents correctly treats the open menu as a reason to dismiss overlays.
+        if (Minecraft.getInstance().screen instanceof CourseUiScreen) Minecraft.getInstance().setScreen(null);
         activeCard = ScorecardData.load(tag);
     }
 
@@ -58,13 +61,14 @@ public final class ClientScorecardScreen {
         g.fill(x + 3, y + 4, x + panelW + 3, y + panelH + 4, 0x80000000);
         g.fill(x, y, x + panelW, y + panelH, 0xFFF0E3BD);
         g.fill(x + 2, y + 2, x + panelW - 2, y + panelH - 2, 0xFFFFF6DD);
-        g.fill(x, y, x + panelW, y + 4, 0xFFB4872C);
-        g.fill(x + 8, y + 31, x + panelW - 8, y + 33, 0xFF234B34);
+        // High-contrast clubhouse header: never place dark olive/brown text directly on cream.
+        g.fill(x, y, x + panelW, y + 33, 0xFF173B2A);
+        g.fill(x, y + 31, x + panelW, y + 34, 0xFFD2A84A);
 
-        g.drawCenteredString(font, card.course().toUpperCase(), x + panelW / 2, y + 9, 0xFF102A1B);
+        drawCenteredNoShadow(g, font, card.course().toUpperCase(), x + panelW / 2, y + 8, 0xFFFFFFFF);
         String status = card.completed() ? "OFFICIAL ROUND SCORECARD"
                 : ("EXITED".equals(card.finishReason()) ? "ROUND SCORECARD - EXITED EARLY" : "PARTIAL ROUND SCORECARD");
-        g.drawCenteredString(font, status, x + panelW / 2, y + 20, 0xFF4A3618);
+        drawCenteredNoShadow(g, font, status, x + panelW / 2, y + 19, 0xFFFFE09A);
 
         int left = x + 10;
         String date = card.endedAt() > 0
@@ -125,10 +129,10 @@ public final class ClientScorecardScreen {
         for (int i = 0; i < holes.size() && i < 9; i++) {
             RoundHoleScore hole = holes.get(i);
             int cx = x + labelW + i * colW;
-            g.drawCenteredString(font, Integer.toString(hole.hole()), cx + colW / 2, y, 0xFF102A1B);
-            g.drawCenteredString(font, Integer.toString(hole.par()), cx + colW / 2, y + 11, 0xFF263D2D);
+            drawCenteredNoShadow(g, font, Integer.toString(hole.hole()), cx + colW / 2, y, 0xFF102A1B);
+            drawCenteredNoShadow(g, font, Integer.toString(hole.par()), cx + colW / 2, y + 11, 0xFF263D2D);
             String scoreText = Integer.toString(hole.strokes()) + (hole.completed() ? "" : "*");
-            g.drawCenteredString(font, scoreText, cx + colW / 2, y + 22, scoreColor(hole));
+            drawCenteredNoShadow(g, font, scoreText, cx + colW / 2, y + 22, scoreColor(hole));
             parTotal += hole.par();
             scoreTotal += hole.strokes();
         }
@@ -160,6 +164,10 @@ public final class ClientScorecardScreen {
             b.append("Designed by ").append(card.courseAuthor());
         }
         return b.toString();
+    }
+
+    private static void drawCenteredNoShadow(GuiGraphics g, net.minecraft.client.gui.Font font, String text, int centerX, int y, int color) {
+        g.drawString(font, text, centerX - font.width(text) / 2, y, color, false);
     }
 
     private static String trim(net.minecraft.client.gui.Font font, String text, int maxWidth) {

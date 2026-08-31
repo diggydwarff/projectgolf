@@ -63,6 +63,7 @@ public final class GolfCreativeTabs {
                         output.accept(GolfItems.ROUGH_PRECISION_SLOPE.get());
                         output.accept(GolfItems.GOLF_CUP.get());
                         output.accept(GolfItems.TEE_MARKER.get());
+                        output.accept(GolfItems.DRIVING_RANGE_TEE.get());
                         output.accept(GolfItems.COURSE_DESIGNER.get());
 
                         // Development tools intentionally remain at the end while mechanics are alpha.
