@@ -4,6 +4,7 @@ import dev.projectgolf.course.GolfCourseSavedData;
 import dev.projectgolf.course.HoleDefinition;
 import dev.projectgolf.entity.GolfBallEntity;
 import dev.projectgolf.golf.GolfTuning;
+import dev.projectgolf.network.RoundStatePayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -14,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -90,6 +92,7 @@ public final class GolfRoundManager {
         CompoundTag golf = golfTag(player);
         golf.putInt(STROKES, golf.getInt(STROKES) + 1);
         golf.putLong(LAST_SWING_TICK, player.level().getGameTime());
+        syncRound(player);
     }
 
     public static void addPenalty(ServerPlayer player, int strokes, String reason) {
@@ -98,6 +101,7 @@ public final class GolfRoundManager {
         CompoundTag golf = golfTag(player);
         golf.putInt(PENALTIES, golf.getInt(PENALTIES) + applied);
         player.sendSystemMessage(Component.literal(reason + " +" + applied + " penalty"));
+        syncRound(player);
     }
 
     public static void finishHole(ServerPlayer player) {
@@ -137,6 +141,7 @@ public final class GolfRoundManager {
             resetHole(player);
             player.sendSystemMessage(Component.literal(
                     "Next: hole " + next.number() + " (par " + next.par() + ")."));
+            syncRound(player);
             return;
         }
 
@@ -147,6 +152,7 @@ public final class GolfRoundManager {
         golf.putString(CURRENT_COURSE, "");
         golf.putInt(CURRENT_HOLE, 0);
         resetHole(player);
+        syncRound(player);
     }
 
     public static void resetHole(ServerPlayer player) {
@@ -164,6 +170,7 @@ public final class GolfRoundManager {
         golf.putInt(TOTAL_STROKES, 0);
         golf.putInt(TOTAL_PAR, 0);
         resetHole(player);
+        syncRound(player);
     }
 
 
@@ -192,6 +199,7 @@ public final class GolfRoundManager {
         golf.putInt(TOTAL_STROKES, 0);
         golf.putInt(TOTAL_PAR, 0);
         resetHole(player);
+        syncRound(player);
     }
 
     public static Optional<HoleDefinition> currentHoleDefinition(ServerPlayer player) {
@@ -211,6 +219,34 @@ public final class GolfRoundManager {
         return def.cup() != null
                 && def.dimension().equals(ballDimension.location().toString())
                 && def.cup().equals(cupPos);
+    }
+
+    /** Push the authoritative active-hole state used by the persistent HUD and Golden Spotter. */
+    public static void syncRound(ServerPlayer player) {
+        if (!hasActiveRound(player)) {
+            PacketDistributor.sendToPlayer(player, RoundStatePayload.inactive());
+            return;
+        }
+        HoleDefinition hole = currentHoleDefinition(player).orElse(null);
+        if (hole == null || hole.tee() == null || hole.cup() == null) {
+            PacketDistributor.sendToPlayer(player, RoundStatePayload.inactive());
+            return;
+        }
+        CompoundTag golf = golfTag(player);
+        PacketDistributor.sendToPlayer(player, new RoundStatePayload(
+                true,
+                golf.getString(CURRENT_COURSE),
+                hole.number(),
+                hole.par(),
+                strokes(player),
+                golf.getInt(TOTAL_STROKES),
+                golf.getInt(TOTAL_PAR),
+                hole.tee(),
+                hole.cup()));
+    }
+
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) syncRound(player);
     }
 
     public static int totalStrokes(ServerPlayer player) {

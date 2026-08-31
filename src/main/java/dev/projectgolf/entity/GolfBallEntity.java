@@ -7,6 +7,7 @@ import dev.projectgolf.golf.ClubType;
 import dev.projectgolf.golf.GolfPhysics;
 import dev.projectgolf.golf.GolfSurface;
 import dev.projectgolf.golf.GolfTuning;
+import dev.projectgolf.golf.GolfWind;
 import dev.projectgolf.golf.SwingMath;
 import dev.projectgolf.item.GolfDebugWandItem;
 import dev.projectgolf.registry.GolfBlocks;
@@ -244,6 +245,8 @@ public class GolfBallEntity extends ThrowableItemProjectile {
 
         Vec3 beforeMove = position();
         SlopeEntry slopeEntry = findUphillSlopeEntry(beforeMove, requested);
+        SlopeExit slopeExit = findUphillSlopeExit(beforeMove, requested);
+        GrassSlabEntry grassSlabEntry = findNaturalGrassSlabEntry(beforeMove, requested);
         move(MoverType.SELF, requested);
         Vec3 actualMove = position().subtract(beforeMove);
 
@@ -257,7 +260,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         // of a configured golf slope, lift onto its first collision terrace and retry only the
         // horizontal remainder. This is a slope transition, not a wall impact.
         boolean handledSlopeLip = false;
-        if (slopeEntry != null && (collidedX || collidedZ)) {
+        if ((collidedX || collidedZ) && slopeEntry != null) {
             Vec3 firstMove = actualMove;
             double lift = slopeEntry.firstSurfaceY() - getY();
             if (lift <= 0.02 && getY() >= slopeEntry.firstSurfaceY() - 0.02) {
@@ -269,6 +272,51 @@ public class GolfBallEntity extends ThrowableItemProjectile {
                 double remainingX = requested.x - firstMove.x;
                 double remainingZ = requested.z - firstMove.z;
                 move(MoverType.SELF, new Vec3(remainingX, 0.0, remainingZ));
+                actualMove = position().subtract(beforeMove);
+                collidedX = Math.abs(actualMove.x - requested.x) > 1.0e-5;
+                collidedZ = Math.abs(actualMove.z - requested.z) > 1.0e-5;
+                handledSlopeLip = true;
+            }
+        }
+
+        // Natural grass half-slabs are a deliberate coarse course-building surface. Keep the
+        // global ball step height at 1/4 so ordinary Minecraft slabs/walls remain real obstacles,
+        // but explicitly allow the custom Grass Slab's 1/2-block rise. Once on top, currentLie()
+        // reports NATURAL_ROUGH, so vanilla-grass drag/power behavior applies normally.
+        if ((collidedX || collidedZ) && !handledSlopeLip && grassSlabEntry != null) {
+            Vec3 firstMove = actualMove;
+            double lift = grassSlabEntry.surfaceY() - getY();
+            if (lift > 1.0e-5 && lift <= 0.525) {
+                setPos(getX(), getY() + lift + 0.001, getZ());
+                double remainingX = requested.x - firstMove.x;
+                double remainingZ = requested.z - firstMove.z;
+                move(MoverType.SELF, new Vec3(remainingX, 0.0, remainingZ));
+                actualMove = position().subtract(beforeMove);
+                collidedX = Math.abs(actualMove.x - requested.x) > 1.0e-5;
+                collidedZ = Math.abs(actualMove.z - requested.z) > 1.0e-5;
+                handledSlopeLip = true;
+            }
+        }
+
+        // The opposite seam can fail for the same reason: after climbing the last collision
+        // terrace, floating-point/collision rounding can leave the ball a few hundredths below
+        // the adjacent flat surface. Entity.move then sees the destination block's side as a wall
+        // and the ball appears to stick at the crest. Only when we are travelling UPHILL off a
+        // known golf slope, and the next surface actually lines up with that slope's high edge,
+        // snap the ball onto that surface and retry the unused horizontal movement. This is a seam
+        // correction only; it adds no forward speed and cannot auto-climb unrelated blocks.
+        if ((collidedX || collidedZ) && slopeExit != null) {
+            Vec3 firstMove = actualMove;
+            double lift = slopeExit.destinationSurfaceY() - getY();
+            if (lift >= -0.025 && lift <= maxUpStep() + 0.04) {
+                if (lift > 1.0e-5) {
+                    setPos(getX(), getY() + lift + 0.001, getZ());
+                }
+                double remainingX = requested.x - firstMove.x;
+                double remainingZ = requested.z - firstMove.z;
+                if (Math.abs(remainingX) > 1.0e-6 || Math.abs(remainingZ) > 1.0e-6) {
+                    move(MoverType.SELF, new Vec3(remainingX, 0.0, remainingZ));
+                }
                 actualMove = position().subtract(beforeMove);
                 collidedX = Math.abs(actualMove.x - requested.x) > 1.0e-5;
                 collidedZ = Math.abs(actualMove.z - requested.z) > 1.0e-5;
@@ -295,7 +343,7 @@ public class GolfBallEntity extends ThrowableItemProjectile {
                 velocity = GolfPhysics.greenLayerUphill(velocity, actualMove.y);
             }
         } else {
-            velocity = GolfPhysics.airborne(velocity);
+            velocity = GolfPhysics.airborne(velocity, GolfWind.acceleration(level()));
         }
 
         if (slopeInfo == null && GolfPhysics.shouldSettle(velocity, onGround())) {
@@ -452,6 +500,28 @@ public class GolfBallEntity extends ThrowableItemProjectile {
         return null;
     }
 
+    private @Nullable GrassSlabEntry findNaturalGrassSlabEntry(Vec3 from, Vec3 requested) {
+        Direction movement = horizontalDirection(requested);
+        if (movement == null) return null;
+
+        BlockPos origin = BlockPos.containing(from);
+        BlockPos projected = BlockPos.containing(from.x + requested.x, from.y, from.z + requested.z);
+        BlockPos[] candidates = { projected, origin.relative(movement), projected.below(), origin.relative(movement).below() };
+        for (BlockPos pos : candidates) {
+            BlockState state = level().getBlockState(pos);
+            if (state.getBlock() != GolfBlocks.GRASS_SLAB.get()) continue;
+            var shape = state.getCollisionShape(level(), pos);
+            if (shape.isEmpty()) continue;
+            double surfaceY = pos.getY() + shape.max(Direction.Axis.Y);
+            double lift = surfaceY - from.y;
+            // Bottom half-slab only. Top/double slabs remain ordinary obstacles.
+            if (lift > 0.26 && lift <= 0.525) return new GrassSlabEntry(surfaceY);
+        }
+        return null;
+    }
+
+    private record GrassSlabEntry(double surfaceY) {}
+
     private static @Nullable Direction horizontalDirection(Vec3 velocity) {
         double ax = Math.abs(velocity.x);
         double az = Math.abs(velocity.z);
@@ -461,6 +531,46 @@ public class GolfBallEntity extends ThrowableItemProjectile {
     }
 
     private record SlopeEntry(double firstSurfaceY) {}
+
+    private @Nullable SlopeExit findUphillSlopeExit(Vec3 from, Vec3 requested) {
+        Direction movement = horizontalDirection(requested);
+        if (movement == null) return null;
+
+        BlockPos origin = BlockPos.containing(from);
+        BlockPos[] slopeCandidates = { origin, origin.below(), origin.relative(movement.getOpposite()), origin.relative(movement.getOpposite()).below() };
+
+        for (BlockPos slopePos : slopeCandidates) {
+            BlockState slopeState = level().getBlockState(slopePos);
+            if (!(slopeState.getBlock() instanceof PuttingGreenSlopeBlock slope)) continue;
+            if (slopeState.getValue(PuttingGreenSlopeBlock.FACING) != movement) continue;
+
+            double highSurfaceY = slopePos.getY() + slope.highHeight(slopeState);
+            // We only care about the crest once the ball is already near the high edge vertically.
+            if (from.y < highSurfaceY - maxUpStep() - 0.05 || from.y > highSurfaceY + 0.08) continue;
+
+            BlockPos destination = slopePos.relative(movement);
+            Double destinationSurfaceY = alignedTopSurfaceY(destination, highSurfaceY);
+            if (destinationSurfaceY == null) {
+                destinationSurfaceY = alignedTopSurfaceY(destination.below(), highSurfaceY);
+            }
+            if (destinationSurfaceY == null) continue;
+            return new SlopeExit(destinationSurfaceY);
+        }
+        return null;
+    }
+
+    private @Nullable Double alignedTopSurfaceY(BlockPos pos, double expectedY) {
+        BlockState state = level().getBlockState(pos);
+        if (state.isAir()) return null;
+        var shape = state.getCollisionShape(level(), pos);
+        if (shape.isEmpty()) return null;
+        double topY = pos.getY() + shape.max(Direction.Axis.Y);
+        // The helper must never become generic step-up. It is valid only for a surface whose top
+        // is essentially the continuation of the configured slope's high edge.
+        return Math.abs(topY - expectedY) <= 0.055 ? topY : null;
+    }
+
+    private record SlopeExit(double destinationSurfaceY) {}
 
     private @Nullable SlopeInfo currentSlopeInfo() {
         BlockState state = level().getBlockState(blockPosition());

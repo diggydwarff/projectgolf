@@ -17,8 +17,14 @@ public final class ClientBridge {
         void show(HoleViewPayload payload);
     }
 
+    @FunctionalInterface
+    public interface RoundStatePresenter {
+        void show(RoundStatePayload payload);
+    }
+
     private static ShotSummaryPresenter shotSummaryPresenter = (title, message) -> {};
     private static HoleViewPresenter holeViewPresenter = payload -> {};
+    private static RoundStatePresenter roundStatePresenter = payload -> {};
 
     private ClientBridge() {}
 
@@ -36,5 +42,13 @@ public final class ClientBridge {
 
     public static void showHoleView(HoleViewPayload payload) {
         holeViewPresenter.show(payload);
+    }
+
+    public static void installRoundStatePresenter(RoundStatePresenter presenter) {
+        roundStatePresenter = presenter == null ? payload -> {} : presenter;
+    }
+
+    public static void showRoundState(RoundStatePayload payload) {
+        roundStatePresenter.show(payload);
     }
 }

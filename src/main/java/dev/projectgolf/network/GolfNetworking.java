@@ -11,5 +11,6 @@ public final class GolfNetworking {
         registrar.playToServer(SwingPayload.TYPE, SwingPayload.STREAM_CODEC, SwingPayload::handle);
         registrar.playToClient(ShotSummaryPayload.TYPE, ShotSummaryPayload.STREAM_CODEC, ShotSummaryPayload::handle);
         registrar.playToClient(HoleViewPayload.TYPE, HoleViewPayload.STREAM_CODEC, HoleViewPayload::handle);
+        registrar.playToClient(RoundStatePayload.TYPE, RoundStatePayload.STREAM_CODEC, RoundStatePayload::handle);
     }
 }

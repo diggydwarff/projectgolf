@@ -12,6 +12,7 @@ public final class ProjectGolfClient {
     public ProjectGolfClient(IEventBus modBus) {
         ClientBridge.installShotSummaryPresenter(ClientShotSummary::show);
         ClientBridge.installHoleViewPresenter(ClientHoleView::show);
+        ClientBridge.installRoundStatePresenter(ClientRoundState::accept);
         modBus.addListener(ClientEvents::registerRenderers);
         modBus.addListener(ClientEvents::registerHud);
         modBus.addListener(ClientEvents::registerKeyMappings);

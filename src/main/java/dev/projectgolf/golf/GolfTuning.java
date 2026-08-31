@@ -9,6 +9,10 @@ public final class GolfTuning {
 
     public static final double BALL_GRAVITY = 0.035;
     public static final double AIR_HORIZONTAL_DRAG = 0.9975;
+    // Tactical golf wind: enough to visibly move a long shot without turning every breeze into a
+    // random-number penalty. Strength 1.0 adds this much horizontal velocity per airborne tick.
+    public static final double WIND_MAX_ACCELERATION = 0.0022;
+    public static final int WIND_WISP_BASE_INTERVAL_TICKS = 9;
     public static final double MAX_BALL_SPEED = 4.25;
     public static final double STOP_HORIZONTAL_SPEED = 0.012;
     public static final int STOP_SETTLE_TICKS = 8;
@@ -37,6 +41,11 @@ public final class GolfTuning {
 
     public static final int PREVIEW_POINTS = 32;
     public static final double PREVIEW_STEP_TICKS = 1.0;
+    // Putting needs a longer rolling simulation than airborne clubs. Only every few simulated
+    // ticks becomes a visible preview point, keeping the marker useful without creating a carpet
+    // of particles across the green.
+    public static final int PUTTER_PREVIEW_MAX_TICKS = 180;
+    public static final int PUTTER_PREVIEW_POINT_INTERVAL_TICKS = 4;
     // Visibility should come from strong, spaced markers rather than particle density.
     public static final int PREVIEW_PARTICLE_INTERVAL_TICKS = 8;
     public static final int PREVIEW_PARTICLE_STRIDE = 5;

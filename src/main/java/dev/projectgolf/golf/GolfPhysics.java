@@ -80,11 +80,17 @@ public final class GolfPhysics {
     }
 
     public static Vec3 airborne(Vec3 velocity) {
-        return new Vec3(
-                velocity.x * GolfTuning.AIR_HORIZONTAL_DRAG,
+        return airborne(velocity, Vec3.ZERO);
+    }
+
+    /** Applies normal air drag plus the shared horizontal golf-wind acceleration. */
+    public static Vec3 airborne(Vec3 velocity, Vec3 windAcceleration) {
+        Vec3 wind = finite(windAcceleration) ? windAcceleration : Vec3.ZERO;
+        return clampSpeed(new Vec3(
+                velocity.x * GolfTuning.AIR_HORIZONTAL_DRAG + wind.x,
                 velocity.y,
-                velocity.z * GolfTuning.AIR_HORIZONTAL_DRAG
-        );
+                velocity.z * GolfTuning.AIR_HORIZONTAL_DRAG + wind.z
+        ));
     }
 
     public static double horizontalSpeed(Vec3 velocity) {

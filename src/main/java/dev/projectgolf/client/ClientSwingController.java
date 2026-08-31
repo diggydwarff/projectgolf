@@ -184,8 +184,28 @@ public final class ClientSwingController {
             }
 
             if (clubItem.club() == ClubType.PUTTER) {
+                // Put the marker on the actual top collision surface. If rising terrain blocks the
+                // player's line of sight, turn the compact pin into a taller beacon so Shift+Wheel
+                // never leaves its target buried behind/inside a green slope.
+                TrajectoryPredictor.MarkerPlacement marker = TrajectoryPredictor.putterMarker(player, end);
+                Vec3 base = marker.base();
+                int stemPoints = marker.occluded() ? 7 : 4;
+                for (int i = 0; i < stemPoints; i++) {
+                    double t = stemPoints <= 1 ? 0.0 : i / (double) (stemPoints - 1);
+                    player.level().addAlwaysVisibleParticle(
+                            i == stemPoints - 1 ? GolfVisualEffects.GOLD_DUST : GolfVisualEffects.WHITE_DUST,
+                            true, base.x, base.y + marker.height() * t, base.z, 0, 0, 0);
+                }
                 player.level().addAlwaysVisibleParticle(
-                        GolfVisualEffects.GOLD_DUST, true, end.x, end.y + 0.10, end.z, 0, 0, 0);
+                        GolfVisualEffects.GOLD_DUST, true, base.x, base.y + 0.03, base.z, 0, 0, 0);
+                player.level().addAlwaysVisibleParticle(
+                        GolfVisualEffects.WHITE_DUST, true, base.x + 0.16, base.y + 0.05, base.z, 0, 0, 0);
+                player.level().addAlwaysVisibleParticle(
+                        GolfVisualEffects.WHITE_DUST, true, base.x - 0.16, base.y + 0.05, base.z, 0, 0, 0);
+                player.level().addAlwaysVisibleParticle(
+                        GolfVisualEffects.WHITE_DUST, true, base.x, base.y + 0.05, base.z + 0.16, 0, 0, 0);
+                player.level().addAlwaysVisibleParticle(
+                        GolfVisualEffects.WHITE_DUST, true, base.x, base.y + 0.05, base.z - 0.16, 0, 0, 0);
             } else {
                 // Small planned-carry pin: four total particles, tall enough to read but not a cloud.
                 player.level().addAlwaysVisibleParticle(

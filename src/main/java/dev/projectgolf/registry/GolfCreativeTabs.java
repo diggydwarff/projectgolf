@@ -27,6 +27,7 @@ public final class GolfCreativeTabs {
                         output.accept(GolfItems.IRON.get());
                         output.accept(GolfItems.WEDGE.get());
                         output.accept(GolfItems.PUTTER.get());
+                        output.accept(GolfItems.GOLDEN_SPOTTER.get());
 
                         // Course construction surfaces.
                         output.accept(GolfItems.GRASS_SLAB.get());

@@ -1,3 +1,7 @@
 {
-  "parent": "projectgolf:block/tinted_moss_turf"
+  "parent": "projectgolf:block/tinted_moss_turf",
+  "textures": {
+    "all": "projectgolf:block/putting_green",
+    "particle": "projectgolf:block/putting_green"
+  }
 }

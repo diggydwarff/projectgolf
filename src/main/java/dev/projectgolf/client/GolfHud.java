@@ -1,6 +1,7 @@
 package dev.projectgolf.client;
 
 import dev.projectgolf.golf.GolfTuning;
+import dev.projectgolf.golf.GolfWind;
 import dev.projectgolf.golf.SwingMath;
 import dev.projectgolf.item.GolfClubItem;
 import net.minecraft.client.Minecraft;
@@ -14,7 +15,12 @@ public final class GolfHud {
         Minecraft mc = Minecraft.getInstance();
         ClientHoleView.renderHud(graphics);
         if (ClientHoleView.active()) return;
-        if (mc.player == null || !(mc.player.getMainHandItem().getItem() instanceof GolfClubItem clubItem)) return;
+        if (mc.player == null) return;
+
+        renderRoundHud(graphics, mc);
+        ClientSpotter.renderHud(graphics);
+
+        if (!(mc.player.getMainHandItem().getItem() instanceof GolfClubItem clubItem)) return;
 
         ClientSwingController.trackedBall().ifPresent(ball -> {
             double distance = Math.sqrt(mc.player.distanceToSqr(ball));
@@ -76,6 +82,37 @@ public final class GolfHud {
             graphics.drawCenteredString(mc.font, "SHOT SENT",
                     graphics.guiWidth() / 2, y, 0xFFFFFFFF);
         }
+    }
+
+    private static void renderRoundHud(GuiGraphics graphics, Minecraft mc) {
+        var state = ClientRoundState.state();
+        if (!state.active()) return;
+
+        int x = 8;
+        int y = 8;
+        int width = 156;
+        int height = 58;
+        graphics.fill(x - 4, y - 4, x + width, y + height, 0xB0101010);
+        graphics.drawString(mc.font, state.course(), x, y, 0xFFFFD86A);
+        graphics.drawString(mc.font,
+                "Hole " + state.hole() + "  |  Par " + state.par(), x, y + 12, 0xFFFFFFFF);
+        graphics.drawString(mc.font,
+                "Strokes " + state.strokes(), x, y + 24, 0xFFFFFFFF);
+
+        double dx = state.cup().getX() + 0.5 - mc.player.getX();
+        double dz = state.cup().getZ() + 0.5 - mc.player.getZ();
+        int pinDistance = (int) Math.round(Math.sqrt(dx * dx + dz * dz));
+        String completed = state.totalPar() > 0
+                ? "  |  Completed " + formatRelative(state.totalStrokes() - state.totalPar())
+                : "";
+        graphics.drawString(mc.font,
+                "Pin " + pinDistance + " blocks" + completed, x, y + 36, 0xFFC8C8C8);
+        graphics.drawString(mc.font, GolfWind.hudText(mc.level), x, y + 48, 0xFFE7F3FF);
+    }
+
+    private static String formatRelative(int value) {
+        if (value == 0) return "E";
+        return value > 0 ? "+" + value : Integer.toString(value);
     }
 
     private static String directionHint(Minecraft mc, dev.projectgolf.entity.GolfBallEntity ball) {

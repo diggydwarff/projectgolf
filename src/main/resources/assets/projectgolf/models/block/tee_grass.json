@@ -1,3 +1,7 @@
 {
-  "parent": "projectgolf:block/tinted_turf"
+  "parent": "projectgolf:block/tinted_turf",
+  "textures": {
+    "all": "projectgolf:block/tee_grass",
+    "particle": "projectgolf:block/tee_grass"
+  }
 }

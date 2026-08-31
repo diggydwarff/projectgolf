@@ -1,3 +1,7 @@
 {
-  "parent": "projectgolf:block/fringe"
+  "parent": "projectgolf:block/fringe",
+  "textures": {
+    "all": "projectgolf:block/fringe",
+    "particle": "projectgolf:block/fringe"
+  }
 }

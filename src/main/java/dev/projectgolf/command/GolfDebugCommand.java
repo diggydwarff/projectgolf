@@ -51,6 +51,7 @@ public final class GolfDebugCommand {
                 new ItemStack(GolfItems.IRON.get()),
                 new ItemStack(GolfItems.WEDGE.get()),
                 new ItemStack(GolfItems.PUTTER.get()),
+                new ItemStack(GolfItems.GOLDEN_SPOTTER.get()),
                 new ItemStack(GolfItems.COURSE_DESIGNER.get()),
                 new ItemStack(GolfItems.DEBUG_WAND.get()),
                 new ItemStack(GolfItems.GRASS_SLAB.get(), 64),

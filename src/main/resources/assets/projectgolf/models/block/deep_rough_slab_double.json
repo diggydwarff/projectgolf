@@ -1,3 +1,7 @@
 {
-  "parent": "projectgolf:block/deep_rough"
+  "parent": "projectgolf:block/deep_rough",
+  "textures": {
+    "all": "projectgolf:block/deep_rough",
+    "particle": "projectgolf:block/deep_rough"
+  }
 }

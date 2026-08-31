@@ -407,6 +407,7 @@ public final class GolfCourseCommand {
             return 0;
         }
         HoleDefinition current = hole.get();
+        GolfRoundManager.syncRound(player);
         source.sendSuccess(() -> Component.literal(
                 "Resumed " + GolfRoundManager.currentCourseName(player) + " hole " + current.number()
                         + " (par " + current.par() + ") | current " + GolfRoundManager.strokes(player)

@@ -1,12 +1,14 @@
 package dev.projectgolf.client;
 
-import dev.projectgolf.entity.GolfBallEntity;
 import dev.projectgolf.network.HoleViewPayload;
-import dev.projectgolf.registry.GolfEntities;
 import dev.projectgolf.visual.GolfVisualEffects;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Marker;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -22,8 +24,14 @@ public final class ClientHoleView {
 
     private enum Mode { OVERVIEW, FLYOVER }
 
+    // Server-assigned entity IDs are non-negative in normal play. Keep the client-only camera
+    // anchor far outside that range so ClientLevel.addEntity cannot evict a real tracked entity.
+    private static final int CAMERA_ANCHOR_ID = -1_900_000_724;
+
     private static HoleViewPayload view;
-    private static GolfBallEntity cameraAnchor;
+    private static Marker cameraAnchor;
+    private static Entity previousCameraEntity;
+    private static CameraType previousCameraType;
     private static Mode mode = Mode.OVERVIEW;
     private static int ticks;
     private static int flyoverTicks;
@@ -40,9 +48,23 @@ public final class ClientHoleView {
         flyoverTicks = 0;
         flyoverDuration = computeFlyoverDuration(payload);
 
-        cameraAnchor = new GolfBallEntity(GolfEntities.GOLF_BALL.get(), mc.level);
-        cameraAnchor.setNoGravity(true);
+        previousCameraEntity = mc.getCameraEntity();
+        previousCameraType = mc.options.getCameraType();
+
+        // Use a real client-level vanilla Marker as the camera anchor. The previous implementation
+        // pointed Minecraft at a synthetic GolfBallEntity that was never added to ClientLevel.
+        // That left the renderer/camera tracking an entity outside the normal client entity
+        // lifecycle and could produce the "bugged out" V/B view. Marker is invisible, has no
+        // gameplay physics, and is inserted only on this client; the real player never moves.
+        mc.options.setCameraType(CameraType.FIRST_PERSON);
+        cameraAnchor = new Marker(EntityType.MARKER, mc.level);
+        cameraAnchor.setId(CAMERA_ANCHOR_ID);
         cameraAnchor.setInvisible(true);
+        cameraAnchor.setNoGravity(true);
+        cameraAnchor.moveTo(mc.player.getX(), mc.player.getEyeY(), mc.player.getZ(),
+                mc.player.getYRot(), mc.player.getXRot());
+        cameraAnchor.setOldPosAndRot();
+        mc.level.addEntity(cameraAnchor);
         mc.setCameraEntity(cameraAnchor);
         updateCamera();
     }
@@ -60,10 +82,18 @@ public final class ClientHoleView {
 
     public static void stop() {
         Minecraft mc = Minecraft.getInstance();
-        if (cameraAnchor != null && mc.getCameraEntity() == cameraAnchor && mc.player != null) {
-            mc.setCameraEntity(mc.player);
+        Marker oldAnchor = cameraAnchor;
+        if (oldAnchor != null && mc.getCameraEntity() == oldAnchor) {
+            Entity restore = previousCameraEntity;
+            if (restore == null || restore.isRemoved() || restore.level() != mc.level) restore = mc.player;
+            if (restore != null) mc.setCameraEntity(restore);
         }
+        if (previousCameraType != null) mc.options.setCameraType(previousCameraType);
+        if (oldAnchor != null && !oldAnchor.isRemoved()) oldAnchor.discard();
+
         cameraAnchor = null;
+        previousCameraEntity = null;
+        previousCameraType = null;
         view = null;
         ticks = 0;
         flyoverTicks = 0;
@@ -72,10 +102,14 @@ public final class ClientHoleView {
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         if (!active()) return;
-        if (mc.player == null || mc.level == null || mc.screen != null) {
+        if (mc.player == null || mc.level == null || cameraAnchor.isRemoved()
+                || cameraAnchor.level() != mc.level || !cameraAnchor.isAddedToLevel()) {
             stop();
             return;
         }
+
+        if (mc.options.getCameraType() != CameraType.FIRST_PERSON) mc.options.setCameraType(CameraType.FIRST_PERSON);
+        if (mc.getCameraEntity() != cameraAnchor) mc.setCameraEntity(cameraAnchor);
 
         ticks++;
         if (mode == Mode.FLYOVER) {
@@ -175,9 +209,10 @@ public final class ClientHoleView {
         double horizontal = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
         float yaw = (float) Math.toDegrees(Math.atan2(-delta.x, delta.z));
         float pitch = (float) Math.toDegrees(-Math.atan2(delta.y, horizontal));
-        cameraAnchor.setPos(camera.x, camera.y, camera.z);
-        cameraAnchor.setYRot(yaw);
-        cameraAnchor.setXRot(pitch);
+        // moveTo updates position + rotation together; then collapse old/current interpolation to
+        // the same transform so fast flyover movement cannot smear or snap between stale frames.
+        cameraAnchor.moveTo(camera.x, camera.y, camera.z, yaw, pitch);
+        cameraAnchor.setOldPosAndRot();
     }
 
     private static void renderWorldMarkers(Minecraft mc) {

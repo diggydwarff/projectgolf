@@ -30,6 +30,7 @@ public final class ProjectGolf {
 
         NeoForge.EVENT_BUS.addListener(GolfCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(GolfRoundManager::onPlayerClone);
+        NeoForge.EVENT_BUS.addListener(GolfRoundManager::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(TeeMarkerInteraction::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(PuttingGreenSlopeInteraction::onRightClickBlock);
     }

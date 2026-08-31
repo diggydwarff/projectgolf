@@ -60,8 +60,11 @@ public final class ClientEvents {
     public static void onClientTick(ClientTickEvent.Post event) {
         ClientSwingController.tick();
         ClientHoleView.tick();
+        ClientSpotter.tick();
+        ClientWindEffects.tick();
 
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.player == null) ClientRoundState.clear();
         if (GolfKeyMappings.HOLE_VIEW.consumeClick()) {
             if (ClientHoleView.active()) {
                 ClientHoleView.stop();
@@ -121,11 +124,11 @@ public final class ClientEvents {
     private static int tintFor(net.minecraft.world.level.block.Block block) {
         if (block == GolfBlocks.GRASS_SLAB.get()) return 0x71A74F;
         if (block == GolfBlocks.PUTTING_GREEN.get() || block == GolfBlocks.PUTTING_GREEN_SLAB.get()
-                || block == GolfBlocks.PUTTING_GREEN_LAYER.get() || block == GolfBlocks.GREEN_SLOPE.get()) return 0x4F9E42;
-        if (block == GolfBlocks.TEE_GRASS.get() || block == GolfBlocks.TEE_GRASS_SLAB.get()) return 0x62A94F;
-        if (block == GolfBlocks.FAIRWAY.get() || block == GolfBlocks.FAIRWAY_SLAB.get() || block == GolfBlocks.FAIRWAY_SLOPE.get()) return 0x68A957;
-        if (block == GolfBlocks.FRINGE.get() || block == GolfBlocks.FRINGE_SLAB.get()) return 0x5D954D;
-        if (block == GolfBlocks.DEEP_ROUGH.get() || block == GolfBlocks.DEEP_ROUGH_SLAB.get()) return 0x3F7038;
-        return 0x4E843F;
+                || block == GolfBlocks.PUTTING_GREEN_LAYER.get() || block == GolfBlocks.GREEN_SLOPE.get()) return 0x4D9B48;
+        if (block == GolfBlocks.TEE_GRASS.get() || block == GolfBlocks.TEE_GRASS_SLAB.get()) return 0x64AE50;
+        if (block == GolfBlocks.FAIRWAY.get() || block == GolfBlocks.FAIRWAY_SLAB.get() || block == GolfBlocks.FAIRWAY_SLOPE.get()) return 0x72A956;
+        if (block == GolfBlocks.FRINGE.get() || block == GolfBlocks.FRINGE_SLAB.get()) return 0x5B934B;
+        if (block == GolfBlocks.DEEP_ROUGH.get() || block == GolfBlocks.DEEP_ROUGH_SLAB.get()) return 0x3F6737;
+        return 0x527D40;
     }
 }

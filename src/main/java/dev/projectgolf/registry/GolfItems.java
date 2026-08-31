@@ -5,6 +5,7 @@ import dev.projectgolf.golf.ClubType;
 import dev.projectgolf.item.GolfBallItem;
 import dev.projectgolf.item.GolfClubItem;
 import dev.projectgolf.item.GolfDebugWandItem;
+import dev.projectgolf.item.GoldenSpotterItem;
 import dev.projectgolf.item.CourseDesignerItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -29,6 +30,9 @@ public final class GolfItems {
             ITEMS.registerItem("wedge", p -> new GolfClubItem(ClubType.WEDGE, p), new Item.Properties());
     public static final DeferredItem<GolfClubItem> PUTTER =
             ITEMS.registerItem("putter", p -> new GolfClubItem(ClubType.PUTTER, p), new Item.Properties());
+
+    public static final DeferredItem<GoldenSpotterItem> GOLDEN_SPOTTER =
+            ITEMS.registerItem("golden_spotter", GoldenSpotterItem::new, new Item.Properties());
 
     public static final DeferredItem<CourseDesignerItem> COURSE_DESIGNER =
             ITEMS.registerItem("course_designer", CourseDesignerItem::new, new Item.Properties());

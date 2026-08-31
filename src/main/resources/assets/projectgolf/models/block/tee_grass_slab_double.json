@@ -1,3 +1,7 @@
 {
-  "parent": "projectgolf:block/tee_grass"
+  "parent": "projectgolf:block/tee_grass",
+  "textures": {
+    "all": "projectgolf:block/tee_grass",
+    "particle": "projectgolf:block/tee_grass"
+  }
 }

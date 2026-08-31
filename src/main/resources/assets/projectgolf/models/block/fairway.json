@@ -1,3 +1,7 @@
 {
-  "parent": "projectgolf:block/tinted_turf"
+  "parent": "projectgolf:block/tinted_turf",
+  "textures": {
+    "all": "projectgolf:block/fairway",
+    "particle": "projectgolf:block/fairway"
+  }
 }

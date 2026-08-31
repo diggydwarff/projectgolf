@@ -1,6 +1,7 @@
 {
   "parent": "projectgolf:block/tinted_slab_top",
   "textures": {
-    "all": "minecraft:block/moss_block"
+    "all": "projectgolf:block/putting_green",
+    "particle": "projectgolf:block/putting_green"
   }
 }

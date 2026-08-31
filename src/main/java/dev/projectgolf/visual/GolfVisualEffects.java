@@ -17,6 +17,12 @@ public final class GolfVisualEffects {
             new DustParticleOptions(new Vector3f(1.0f, 1.0f, 1.0f), 1.35f);
     public static final DustParticleOptions GOLD_DUST =
             new DustParticleOptions(new Vector3f(1.0f, 0.72f, 0.08f), 1.45f);
+    public static final DustParticleOptions BALL_DUST =
+            new DustParticleOptions(new Vector3f(0.20f, 0.88f, 1.0f), 1.55f);
+    public static final DustParticleOptions TEE_DUST =
+            new DustParticleOptions(new Vector3f(0.45f, 1.0f, 0.30f), 1.45f);
+    public static final DustParticleOptions WIND_DUST =
+            new DustParticleOptions(new Vector3f(0.90f, 0.96f, 1.0f), 0.72f);
 
     public static void perfectSwing(ServerLevel level, Vec3 position) {
         level.sendParticles(GOLD_DUST,

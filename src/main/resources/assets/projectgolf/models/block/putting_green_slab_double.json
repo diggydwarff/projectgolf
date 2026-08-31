@@ -1,3 +1,7 @@
 {
-  "parent": "projectgolf:block/putting_green"
+  "parent": "projectgolf:block/putting_green",
+  "textures": {
+    "all": "projectgolf:block/putting_green",
+    "particle": "projectgolf:block/putting_green"
+  }
 }
