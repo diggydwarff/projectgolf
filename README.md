@@ -1,6 +1,6 @@
 # Project Golf
 
-Project Golf brings full-featured golf to Minecraft.
+Project Golf brings full-featured golf to Minecraft Neoforge 1.21.1
 
 Build complete golf courses using dedicated tees, cups, fairways, putting greens, bunkers, slopes, and precision terrain pieces, then play them with a physics-driven golf system featuring multiple club types, wind, shot prediction, putting, scoring, multiplayer rounds, scorecards, leaderboards, and course flyovers.
 
